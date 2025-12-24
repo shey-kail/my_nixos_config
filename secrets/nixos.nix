@@ -72,16 +72,17 @@ in
         #        }
         #        // normal;
         #
-        #        "gemini_dotenv" = {
-        #          file = "${mysecrets}/gemini/dotenv.age";
-        #          path = "/home/${myvars.username}/.gemini/.env";
-        #        }
-        #        // normal;
         #        "gemini_google_accounts" = {
         #          file = "${mysecrets}/gemini/google_accounts.json.age";
         #          path = "/home/${myvars.username}/.gemini/google_accounts.json.age";
         #         }
         #         // normal;
+        "gemini_dotenv" = {
+          file = "${mysecrets}/gemini/dotenv.age";
+          path = "/home/${myvars.username}/.gemini/.env";
+          symlink = false;
+        }
+        // normal;
 
         "shey_private" = {
           file = "${mysecrets}/ssh/shey_private/id_rsa.age";
