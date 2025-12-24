@@ -1,0 +1,84 @@
+global {
+    log_level: info
+    # lan_interface: wlp2s0 # 按需开启
+    dial_mode: domain++
+    wan_interface: auto
+}
+
+# 定义出站代理，即我们的 singbox
+node {
+  # 现在 singbox 只有一个全局选择器，用户可在自动选择、手动选择或直连间切换
+  singbox: 'socks5://127.0.0.1:9050'
+}
+
+group {
+    singbox {
+        filter: name(singbox)
+        policy: fixed(0)
+    }
+}
+
+## DNS 配置保持不变
+#dns {
+#  ipversion_prefer: 4
+#  upstream {
+#    alidns: 'udp://223.5.5.5:53'
+#    cfdns: 'tcp+udp://1.1.1.1:53'
+#  }
+#  routing {
+#    request {
+#      qname(geosite:cn) -> alidns
+#      fallback: cfdns
+#    }
+#  }
+#}
+
+# 分流规则
+routing {
+    # --- 直连规则 ---
+    # DNS/SSH 等相关进程强制直连
+    pname(dnsmasq, dropbear) -> must_direct
+
+    # 增加将sing-box流量直连不通过dae的路由配置
+    pname(sing-box) -> must_direct
+
+    # DNS 地址或域名，强制直连
+    dip(8.8.8.8) -> must_direct
+    dip(1.1.1.1) -> must_direct
+    domain(dns.alidns.com) -> must_direct
+    domain(dns.google) -> must_direct
+    domain(cloudflare-dns.com) -> must_direct
+
+    # 目标 IP 多播、广播地址，直连
+    dip(224.0.0.0/3, 'ff00::/8') -> direct
+
+    # 目标 IP geoip 中的内网地址，直连
+    dip(geoip:private) -> direct
+
+    # 目标 IP 中国 IP，直连
+    dip(geoip:cn) -> direct
+
+    # 中国域名，直连
+    domain(geosite:cn) -> direct
+
+    # 浏览器的进程直连 (浏览器使用proxy switchyomega)
+    pname(msedge, firefox) -> direct
+
+    # tailscale的进程直连
+    pname(tailscaled) -> direct
+
+    # git的进程直接忽略，让git自己走代理
+    pname(git) -> direct
+
+    # --- 拦截规则 ---
+    # 广告域名，拒绝
+    domain(geosite:category-ads) -> block
+    l4proto(udp) && dport(443) -> block # 拦截 QUIC
+
+    # --- 代理规则 (全部指向 singbox) ---
+    # 未命中直连规则的流量，全部走 singbox 代理
+
+    # --- 兜底规则 ---
+    # 未命中上面规则的，全部走 singbox 代理
+    fallback: singbox
+}

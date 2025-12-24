@@ -1,0 +1,8 @@
+[AC][Display]
+UseProfileSpecificDisplayBrightness=true
+
+[AC][Performance]
+PowerProfile=power-saver
+
+[AC][SuspendAndShutdown]
+AutoSuspendAction=0
