@@ -7,14 +7,6 @@
   "dns": {
     "rules": [
       {
-        "clash_mode": "Proxy",
-        "server": "remote"
-      },
-      {
-        "clash_mode": "Direct",
-        "server": "local"
-      },
-      {
         "rule_set": [
           "cn"
         ],
@@ -64,7 +56,7 @@
       "tag": "🎯 全球直连",
       "type": "selector",
       "outbounds": [
-        "DIRECT",
+        "direct",
         "select",
         "urltest"
       ]
@@ -75,7 +67,7 @@
       "outbounds": [
         "select",
         "urltest",
-        "DIRECT"
+        "direct"
       ]
     },
     {
@@ -84,15 +76,12 @@
       "outbounds": [
         "select",
         "urltest",
-        "DIRECT"
+        "direct"
       ]
-    },
-    {
-      "tag": "DIRECT",
-      "type": "direct"
     }
   ],
   "route": {
+    "default_domain_resolver": "local",
     "rules": [
       {
         "rule_set": [
@@ -109,7 +98,7 @@
       },
       {
         "action": "resolve",
-        "server": "dns_proxy",
+        "server": "remote",
         "strategy": "prefer_ipv4"
       }
     ],
