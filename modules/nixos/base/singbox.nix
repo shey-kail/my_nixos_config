@@ -18,25 +18,22 @@ let
 
 
   # 配置clash2singbox
-  clash2singbox-custom = pkgs.buildGoModule rec {
-    pname = "clash2singbox";
-    version = "d3d4133"; # 你指定的 commit hash
-
-    src = pkgs.fetchFromGitHub {
-      owner = "xmdhs";
-      repo = "clash2singbox";
-      rev = version;
-      sha256 = "sha256-dH/G/RQjuawIco3DvAb9IYdhcWcUhqrKTy+jbd17bwM=";
-    };
-
-    vendorHash = "sha256-yyNECSxGhg32wDB/wRdukyvLDwYq9S3EE078T0ZcfKY=";
-
-    meta = with pkgs.lib; {
-      description = "Convert Clash configuration to Sing-box format";
-      homepage = "https://github.com/xmdhs/clash2singbox";
-      license = licenses.mit;
-    };
-  };
+  # clash2singbox-custom = pkgs.buildGoModule rec {
+  #   pname = "clash2singbox";
+  #   version = "d3d4133"; # 你指定的 commit hash
+  #   src = pkgs.fetchFromGitHub {
+  #     owner = "xmdhs";
+  #     repo = "clash2singbox";
+  #     rev = version;
+  #     sha256 = "sha256-dH/G/RQjuawIco3DvAb9IYdhcWcUhqrKTy+jbd17bwM=";
+  #   };
+  #   vendorHash = "sha256-yyNECSxGhg32wDB/wRdukyvLDwYq9S3EE078T0ZcfKY=";
+  #   meta = with pkgs.lib; {
+  #     description = "Convert Clash configuration to Sing-box format";
+  #     homepage = "https://github.com/xmdhs/clash2singbox";
+  #     license = licenses.mit;
+  #   };
+  # };
 in
 {
   # 0. singbox 用户和目录
@@ -61,14 +58,21 @@ in
     description = "Update singbox subscriptions";
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
-    path = with pkgs; [ coreutils curl gnused jq clash2singbox-custom systemd ];
+    path = with pkgs; [ coreutils curl gnused jq systemd ];
 
     script = ''
       mkdir -p ${persistSubDir}
 
-      # 从模板中构建配置，dae负责所有DNS解析和流量分流，singbox仅作为节点池
-      clash2singbox -url "$(cat ${secret_path})" -template ${templateFile} -o /dev/stdout | \
-      jq '.experimental += { "clash_api": { "external_controller": "127.0.0.1:9090", "external_ui": "${metacubexdDashboard}", "secret": "" } }' > ${configTmpFile}
+      # 获取订阅配置并应用一系列转换（合并为单个jq命令以避免多行管道语法问题）
+      # 1. 移除 type 为 "tun" 的 inbounds
+      # 2. 将 type 为 "mixed" 的 inbounds 绑定到 127.0.0.1:9050
+      # 3. 设置日志配置：启用日志、级别为 error、带时间戳
+      # 4. 设置默认域名解析器为 dns_direct，并移除所有包含 clash_mode 字段的规则
+      # 5. 设置AI服务默认为新加坡节点
+      # 6. 设置测试延迟的地址为http://www.google.com/generate_204
+      # 7. 启用 Clash API，配置外部控制地址、Web UI 路径和空 secret
+      curl -s "$(cat ${secret_path})" | \
+        jq --arg dashboard "${metacubexdDashboard}" '.inbounds |= map(select(.type != "tun")) | .inbounds |= map(if .type == "mixed" then (.listen = "127.0.0.1" | .listen_port = 9050) else . end) | .log = {"disabled": false, "level": "error", "timestamp": true} | .route |= (.default_domain_resolver = "dns_direct" | .rules |= map(select(.clash_mode | not?))) | .outbounds |= map(if (.type == "selector" and .tag == "💬 AI 服务") then .default = "🇸🇬 Singapore" else . end) | .experimental.clash_api.default_latency_url //= "http://www.google.com/generate_204" | .experimental += { "clash_api": { "external_controller": "127.0.0.1:9090", "external_ui": $dashboard, "secret": "" } }' > "${configTmpFile}"
 
       # Check if the generation was successful AND the new file is not empty
       if [ -s ${configTmpFile} ]; then

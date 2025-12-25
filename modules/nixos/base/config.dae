@@ -37,7 +37,7 @@ group {
 routing {
     # --- 直连规则 ---
     # DNS/SSH 等相关进程强制直连
-    pname(dnsmasq, dropbear) -> must_direct
+    pname(ssh, dnsmasq, dropbear) -> must_direct
 
     # 增加将sing-box流量直连不通过dae的路由配置
     pname(sing-box) -> must_direct

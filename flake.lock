@@ -206,11 +206,11 @@
     "mysecrets": {
       "flake": false,
       "locked": {
-        "lastModified": 1766548052,
-        "narHash": "sha256-/YfeqlT3wEEtH4MDgClQCGSWw5EsVDMAT9GLjDdS6sA=",
+        "lastModified": 1766633816,
+        "narHash": "sha256-OTo1rkpxaNpO1U+73om4efDV10OYZRoMewWEjM/DESU=",
         "ref": "refs/heads/main",
-        "rev": "b3cdb9b25ff7c1dbd16fb56f1f06ca02cba5544b",
-        "revCount": 6,
+        "rev": "f0ef9e3e48320ca7629cb45eef7feabca7115ec4",
+        "revCount": 8,
         "type": "git",
         "url": "ssh://git@gitee.com/shey_kail/mysecrets.git"
       },
