@@ -30,10 +30,10 @@ wmclass=org.kde.konsole
 wmclassmatch=1
 
 [697ed78f-8b4d-41de-abc8-364ac7360a2a]
-Description=chrome
+Description=edge
 desktops=322fc188-c17a-46b6-b681-99c131ce9f10
 desktopsrule=3
-wmclass=google-chrome Google-chrome
+wmclass=microsoft-edge
 wmclasscomplete=true
 wmclassmatch=1
 
