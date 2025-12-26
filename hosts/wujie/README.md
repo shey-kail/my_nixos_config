@@ -1,12 +1,8 @@
-# Host - AI
+# Host - wujie
 
 Related:
 
 - [/nixos-installer/README.md](/nixos-installer/README.md)
-
-## TODOs
-
-1. Install DCGM-Exporter on `ai` to monitor the GPU status.
 
 ## Info
 
