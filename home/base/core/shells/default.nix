@@ -20,13 +20,5 @@ in {
     bashrcExtra = ''
       export PATH="$PATH:${localBin}"
     '';
-    #  # enable micromamba
-    #  initExtra = ''
-    #    set -e
-    #    if [[ $FHS == "micromamba_env" ]] ; then
-    #      eval "$(micromamba shell hook --shell bash)" 
-    #    fi
-    #    set +e
-    #  '';
   };
 }
