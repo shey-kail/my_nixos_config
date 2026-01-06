@@ -18,9 +18,9 @@ in {
     unitConfig = {
       Description = "dae Service";
       # 当 sing-box 启动时，dae 也会被尝试启动
-      After = [ "sing-box.service" ];
+      After = [ "singbox.service" ];
       # 绑定关系：如果 sing-box 停止或崩溃，dae 也会立即停止（作为基础保障）
-      BindsTo = [ "sing-box.service" ];
+      BindsTo = [ "singbox.service" ];
     };
   };
 }
