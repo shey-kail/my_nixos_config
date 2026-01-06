@@ -5,10 +5,6 @@ let
 
   # singbox config file
   configFile = "${persistSubDir}/config.json";
-  configTmpFile = "${persistSubDir}/config.json.new";
-
-  # singbox template files
-  templateFile = ./template.json;
 
   # subscription urls
   secret_path = config.age.secrets.singbox_subscriptions.path;
@@ -16,6 +12,10 @@ let
   # singbox dashboard
   metacubexdDashboard = pkgs.metacubexd;
 
+  # singbox subscriptions update script
+  updateScript = pkgs.writeShellScriptBin "singbox-update-script" ''
+    ${builtins.readFile ./singbox-update.sh}
+  '';
 
   # 配置clash2singbox
   # clash2singbox-custom = pkgs.buildGoModule rec {
@@ -61,33 +61,7 @@ in
     path = with pkgs; [ coreutils curl gnused jq systemd ];
 
     script = ''
-      mkdir -p ${persistSubDir}
-
-      # 获取订阅配置并应用一系列转换（合并为单个jq命令以避免多行管道语法问题）
-      # 1. 移除 type 为 "tun" 的 inbounds
-      # 2. 将 type 为 "mixed" 的 inbounds 绑定到 127.0.0.1:9050
-      # 3. 设置日志配置：启用日志、级别为 error、带时间戳
-      # 4. 设置默认域名解析器为 dns_direct，并移除所有包含 clash_mode 字段的规则
-      # 5. 设置AI服务默认为新加坡节点
-      # 6. 设置测试延迟的地址为http://www.google.com/generate_204
-      # 7. 启用 Clash API，配置外部控制地址、Web UI 路径和空 secret
-      curl -s "$(cat ${secret_path})" | \
-        jq --arg dashboard "${metacubexdDashboard}" '.inbounds |= map(select(.type != "tun")) | .inbounds |= map(if .type == "mixed" then (.listen = "127.0.0.1" | .listen_port = 9050) else . end) | .log = {"disabled": false, "level": "error", "timestamp": true} | .route |= (.default_domain_resolver = "dns_direct" | .rules |= map(select(.clash_mode | not?))) | .outbounds |= map(if (.type == "selector" and .tag == "💬 AI 服务") then .default = "🇸🇬 Singapore" else . end) | .experimental.clash_api.default_latency_url //= "http://www.google.com/generate_204" | .experimental += { "clash_api": { "external_controller": "127.0.0.1:9090", "external_ui": $dashboard, "secret": "" } }' > "${configTmpFile}"
-
-      # Check if the generation was successful AND the new file is not empty
-      if [ -s ${configTmpFile} ]; then
-        echo "Update successful. Applying new configuration."
-        mv ${configTmpFile} ${configFile}
-      else
-        echo "Warning: Update fetch failed or produced an empty file. Keeping existing config."
-        rm -f ${configTmpFile} # Clean up the failed artifact
-        exit 0 # Exit successfully without applying changes or reloading
-      fi
-
-      # Finalize permissions and reload. This only runs on successful update.
-      echo "Finalizing permissions and reloading service."
-      chown singbox:singbox ${configFile}
-      systemctl reload-or-try-restart singbox.service
+      ${updateScript}/bin/singbox-update-script --secret-path ${secret_path} --dashboard-path ${metacubexdDashboard}
     '';
 
     serviceConfig = {
