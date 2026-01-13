@@ -11,10 +11,9 @@
 
     xorg.xeyes
 
-    # singbox
-    throne
-    # wps
-    wpsoffice-cn
+    # singbox gui
+    # throne
+
     # video player
     mpv
     # remote desktop

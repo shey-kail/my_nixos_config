@@ -31,9 +31,8 @@
       "org.zotero.Zotero"
       "com.qq.QQ"
       "com.tencent.WeChat"
-      "com.baidu.NetDisk"
       "md.obsidian.Obsidian"
-
+      "cn.wps.wps_365"
     ];
   };
 }
