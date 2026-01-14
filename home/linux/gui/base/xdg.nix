@@ -35,9 +35,13 @@
       defaultApplications = let
         browser = ["com.microsoft.Edge.desktop"];
         editor = ["nvim.desktop"];
+        # 定义 WPS 三大件对应的桌面文件
+        wps = ["cn.wps.wps_365.wps.desktop"];
+        et  = ["cn.wps.wps_365.et.desktop"];
+        wpp = ["cn.wps.wps_365.wpp.desktop"];
       in {
         "application/json" = browser;
-        "application/pdf" = browser; # TODO: pdf viewer
+        "application/pdf" = ["org.kde.okular.desktop"];
 
         "text/html" = browser;
         "text/xml" = browser;
@@ -75,9 +79,22 @@
         "image/png" = ["imv-dir.desktop"];
         "image/webp" = ["imv-dir.desktop"];
 
-        "text/tsv" = ["wps-office-et.desktop"];
-        "text/txt" = ["nvim.desktop" "wps-office-et.desktop"];
-        "text/csv" = ["wps-office-et.desktop"];
+        "text/tsv" = et;
+        "text/txt" = ["nvim.desktop" "cn.wps.wps_365.et.desktop"];
+        "text/csv" = et;
+
+        # --- Word 相关 (.doc, .docx) ---
+        "application/msword" = wps;
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" = wps;
+
+        # --- Excel 相关 (.xls, .xlsx) ---
+        "application/vnd.ms-excel" = et;
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" = et;
+
+        # --- PowerPoint 相关 (.ppt, .pptx) ---
+        "application/vnd.ms-powerpoint" = wpp;
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation" = wpp;
+        "application/vnd.openxmlformats-officedocument.presentationml.slideshow" = wpp;
       };
 
       associations.removed = {
