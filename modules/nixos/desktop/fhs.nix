@@ -17,14 +17,6 @@
     )
 
     (
-      pkgs.buildFHSEnv {
-        name = "pixi_env";
-        runScript = "pixi";
-        targetPkgs = pkgs: with pkgs; [ pixi ];
-      }
-    )
-
-    (
       let
         base = pkgs.appimageTools.defaultFhsEnvArgs;
         python-with-playwright = pkgs.python313.withPackages (ps: with ps; [
