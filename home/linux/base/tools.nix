@@ -13,7 +13,9 @@
     scrcpy
 
     pkgs.nur.repos.lonerOrz.gemini-cli-bin
-    pkgs.nur.repos.lonerOrz.qwen-code
+    pkgs.nur.repos.lonerOrz.qwen-code-bin
+
+    gimp
 
   ];
 }
