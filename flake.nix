@@ -67,7 +67,7 @@
     };
 
     mysecrets = {
-      url = "git+ssh://git@gitee.com/shey_kail/mysecrets.git";
+      url = "git+ssh://git@codeberg.org/sheykail/mysecrets.git";
       flake = false;
     };
   };
