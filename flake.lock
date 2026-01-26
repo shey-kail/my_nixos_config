@@ -206,17 +206,17 @@
     "mysecrets": {
       "flake": false,
       "locked": {
-        "lastModified": 1767143410,
-        "narHash": "sha256-5ve69haTK7PmPbIcmWFgsg6n9Ygo7YxZ8EWxlxzIdUQ=",
+        "lastModified": 1769419605,
+        "narHash": "sha256-1DbTFiRBur6Cu+4GpTyDKmKHUe4Kur1Ni3p4gCgS/jw=",
         "ref": "refs/heads/main",
-        "rev": "9292bf891e54c83e55a5b16ab7d43b09065530ee",
-        "revCount": 10,
+        "rev": "fad26251aaabc7438bac1fcc378846633ede0bfe",
+        "revCount": 12,
         "type": "git",
-        "url": "ssh://git@gitee.com/shey_kail/mysecrets.git"
+        "url": "ssh://git@codeberg.org/sheykail/mysecrets.git"
       },
       "original": {
         "type": "git",
-        "url": "ssh://git@gitee.com/shey_kail/mysecrets.git"
+        "url": "ssh://git@codeberg.org/sheykail/mysecrets.git"
       }
     },
     "nix-flatpak": {
