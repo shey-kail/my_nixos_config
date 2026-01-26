@@ -35,6 +35,7 @@
       trim.bases = "develop,master,main"; # for git-trim
       push.autoSetupRemote = true;
       pull.rebase = true;
+      "http.https://github.com".proxy = "http://127.0.0.1:9050";
     };
   };
 }
