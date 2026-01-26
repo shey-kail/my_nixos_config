@@ -15,13 +15,13 @@ return {
 
   -- disable mini.ai (extend and create `a`/`i` textobjects)
   {
-    "echasnovski/mini.ai",
+    "nvim-mini/mini.ai",
     enabled = false,
   },
 
   -- disable mini.indentscope
   {
-    "echasnovski/mini.indentscope",
+    "nvim-mini/mini.indentscope",
     enabled = false,
   },
 }

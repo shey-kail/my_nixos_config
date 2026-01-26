@@ -7,7 +7,7 @@ return {
   },
   -- cmdline tools and lsp servers
   {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim",
     cmd = "Mason",
     -- opts = {
     --   github = {

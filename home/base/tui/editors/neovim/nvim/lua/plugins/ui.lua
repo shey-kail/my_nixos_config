@@ -41,7 +41,7 @@ return {
   },
 
   {
-    "echasnovski/mini.bufremove",
+    "nvim-mini/mini.bufremove",
 
     keys = {
       {
