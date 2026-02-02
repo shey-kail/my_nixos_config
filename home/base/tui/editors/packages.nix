@@ -74,6 +74,7 @@
       # we'd better use the rust-overlays for rust development
       cargo
       rustc
+      rust-analyzer
 
       #-- lua
       stylua
