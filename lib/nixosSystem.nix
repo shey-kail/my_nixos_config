@@ -12,9 +12,12 @@
   inherit (inputs) nixpkgs home-manager;
 in
   nixpkgs.lib.nixosSystem {
-    inherit system specialArgs;
+    inherit specialArgs;
     modules =
       nixos-modules
+      ++ [
+        {nixpkgs.hostPlatform = system;}
+      ]
       ++ (
         lib.optionals ((lib.lists.length home-modules) > 0)
         [

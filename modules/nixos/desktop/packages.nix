@@ -9,7 +9,7 @@
     wl-clipboard
     xclip
 
-    xorg.xeyes
+    xeyes
 
     # singbox gui
     # throne

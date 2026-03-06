@@ -5,6 +5,7 @@
   # terminal file manager
   programs.yazi = {
     enable = true;
+    shellWrapperName = "y";
     package = pkgs.yazi;
     # Changing working directory when exiting Yazi
     enableBashIntegration = true;
