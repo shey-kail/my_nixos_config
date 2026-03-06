@@ -1,6 +1,3 @@
-[Activities][LastVirtualDesktop]
-a67810f1-8c6a-4feb-8bb0-85a6ed451b21=efb16fef-5ea6-436d-bead-e2c1cf1277f4
-
 [Compositing]
 AllowTearing=false
 
@@ -16,9 +13,9 @@ Name_1=1 
 Name_2=2 
 Name_3=3 
 Name_4=4 
-Name_5=5 
+Name_5=5 
 Name_6=6 
-Name_7=7 
+Name_7=7 
 Number=7
 Rows=1
 
@@ -27,8 +24,6 @@ DisableOutlineTile=false
 
 [NightColor]
 Active=true
-LatitudeAuto=41.8
-LongitudeAuto=123.43
 NightTemperature=5200
 
 [Plugins]
