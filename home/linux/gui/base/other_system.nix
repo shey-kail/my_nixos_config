@@ -3,6 +3,6 @@
     (bottles.override {
       removeWarningPopup = true;
     })
-    android-translation-layer
+    # android-translation-layer
   ];
 }
