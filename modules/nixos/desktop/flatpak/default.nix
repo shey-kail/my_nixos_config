@@ -1,19 +1,22 @@
 {
   nix-flatpak,
-#  inputs,
+  #  inputs,
   lib,
   ...
-}: {
+}:
+{
   imports = [
     nix-flatpak.nixosModules.nix-flatpak
   ];
 
   services.flatpak = {
     enable = true;
-    remotes = lib.mkOptionDefault [{
-      name = "flathub";
-      location = "https://mirrors.ustc.edu.cn/flathub/";
-    }];
+    remotes = lib.mkOptionDefault [
+      {
+        name = "flathub";
+        location = "https://mirrors.ustc.edu.cn/flathub/";
+      }
+    ];
     overrides = {
       global = {
         Environment = {
@@ -26,6 +29,8 @@
       };
     };
     packages = [
+      "app.zen_browser.zen"
+      "com.brave.Browser"
       "com.tencent.wemeet"
       "com.valvesoftware.Steam"
       "org.zotero.Zotero"

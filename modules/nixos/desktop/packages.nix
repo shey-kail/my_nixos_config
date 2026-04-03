@@ -2,7 +2,8 @@
   pkgs,
   lib,
   ...
-}: {
+}:
+{
   boot.loader.timeout = lib.mkForce 10; # wait for x seconds to select the boot entry
 
   environment.systemPackages = with pkgs; [
@@ -10,9 +11,6 @@
     xclip
 
     xeyes
-
-    # singbox gui
-    # throne
 
     # video player
     mpv
@@ -24,14 +22,6 @@
 
     nix-ld
 
-    microsoft-edge
     firefox
   ];
-  programs.throne = {
-    enable = true;
-    tunMode = {
-      enable = true;
-      setuid = true;
-    };
-  };
 }
