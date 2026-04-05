@@ -1,4 +1,5 @@
-{ pkgs, ...}: {
+{ pkgs, ... }:
+{
   # Linux Only Packages, not available on Darwin
   home.packages = with pkgs; [
     virt-viewer # vnc connect to VM, used by kubevirt
@@ -14,6 +15,7 @@
 
     pkgs.nur.repos.lonerOrz.gemini-cli-bin
     pkgs.nur.repos.lonerOrz.qwen-code-bin
+    claude-code
 
     gimp
 
