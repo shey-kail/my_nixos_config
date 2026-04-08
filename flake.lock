@@ -267,11 +267,11 @@
     "mysecrets": {
       "flake": false,
       "locked": {
-        "lastModified": 1769419605,
-        "narHash": "sha256-1DbTFiRBur6Cu+4GpTyDKmKHUe4Kur1Ni3p4gCgS/jw=",
+        "lastModified": 1775653104,
+        "narHash": "sha256-RlmvddRigYPNA+KtcGeLhtTkJfy88o8KOJr7jX3qB2w=",
         "ref": "refs/heads/main",
-        "rev": "fad26251aaabc7438bac1fcc378846633ede0bfe",
-        "revCount": 12,
+        "rev": "e2aa305fac812ae5d363267cf08774e3fe3bf136",
+        "revCount": 17,
         "type": "git",
         "url": "ssh://git@codeberg.org/sheykail/mysecrets.git"
       },
