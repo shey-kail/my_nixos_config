@@ -2,5 +2,5 @@
 
 {
   krohnkite = pkgs.callPackage ./krohnkite.nix {};
-#  gemini-cli = pkgs.callPackage ./gemini-cli {};
+  subpipe = pkgs.callPackage ./subpipe.nix {};
 }

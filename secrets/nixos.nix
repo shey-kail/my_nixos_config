@@ -97,8 +97,13 @@ in
         }
         // user_readable;
 
-        "singbox_subscriptions" = {
-          file = "${mysecrets}/singbox/subscriptions.age";
+        "subscriptions_main" = {
+          file = "${mysecrets}/singbox/subscriptions_main.age";
+        }
+        // high_security;
+
+        "subscriptions_backup" = {
+          file = "${mysecrets}/singbox/subscriptions_backup.age";
         }
         // high_security;
       };

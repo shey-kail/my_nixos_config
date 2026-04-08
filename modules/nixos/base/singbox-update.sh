@@ -1,22 +1,37 @@
 #!/usr/bin/env bash
 
 # singbox subscription update script
-# This script fetches, processes and updates the singbox configuration
+# Fetches and processes main and backup subscriptions using subpipe
 
 set -e
 
 # 物理存放路径
 persistSubDir="/var/lib/singbox/subscriptions"
 
-# singbox config file
-configFile="${persistSubDir}/config.json"
-configTmpFile="${persistSubDir}/config.json.new"
+# 默认参数
+main_secret_path=""
+backup_secret_path=""
+main_template=""
+backup_template=""
+dashboard_path=""
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
-  --secret-path)
-    secret_path="$2"
+  --main-secret-path)
+    main_secret_path="$2"
+    shift 2
+    ;;
+  --backup-secret-path)
+    backup_secret_path="$2"
+    shift 2
+    ;;
+  --main-template)
+    main_template="$2"
+    shift 2
+    ;;
+  --backup-template)
+    backup_template="$2"
     shift 2
     ;;
   --dashboard-path)
@@ -31,47 +46,84 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Check if required parameters are provided
-if [ -z "$secret_path" ] || [ -z "$dashboard_path" ]; then
+if [ -z "$main_secret_path" ] || [ -z "$backup_secret_path" ] || [ -z "$dashboard_path" ]; then
   echo "Error: Missing required parameters"
-  echo "Usage: $0 --secret-path <secret_path> --dashboard-path <dashboard_path>"
+  echo "Usage: $0 --main-secret-path <path> --backup-secret-path <path> --main-template <path> --backup-template <path> --dashboard-path <path>"
   exit 1
 fi
 
 mkdir -p ${persistSubDir}
 
-# 获取订阅配置并应用一系列转换（合并为单个jq命令以避免多行管道语法问题）
-# 1. 移除 type 为 "tun" 的 inbounds
-# 2. 将 type 为 "mixed" 的 inbounds 绑定到 127.0.0.1:9050
-# 3. 设置日志配置：启用日志、级别为 error、带时间戳
-# 4. 设置默认域名解析器为 dns_direct，并移除所有包含 clash_mode 字段的规则
-# 5. 设置AI服务默认为新加坡节点
-# 6. 设置测试延迟的地址为http://www.google.com/generate_204
-# 7. 启用 Clash API，配置外部控制地址、Web UI 路径和空 secret
-curl -s "$(cat "${secret_path}")" |
-  jq --arg dashboard "${dashboard_path}" '.inbounds |= map(select(.type != "tun")) | .inbounds |= map(if .type == "mixed" then (.listen = "127.0.0.1" | .listen_port = 9050) else . end) | .log = {"disabled": false, "level": "error", "timestamp": true} | .route |= (.default_domain_resolver = "dns_direct" | .rules |= map(select(.clash_mode | not?))) | .outbounds |= map(if (.type == "selector" and .tag == "💬 AI 服务") then .default = "🇸🇬 Singapore" else . end) | .experimental.clash_api.default_latency_url //= "http://www.google.com/generate_204" | .experimental += { "clash_api": { "external_controller": "127.0.0.1:9090", "external_ui": $dashboard, "secret": "" } }' >"${configTmpFile}"
+echo "[singbox-update] Starting subscription update..."
 
-# Check if the generation was successful AND the new file is not empty
-if [ -s ${configTmpFile} ]; then
-  echo "Config file Update successful."
+# ========== 主订阅 ==========
+echo "[singbox-update] Processing main subscription..."
+main_url=$(cat "${main_secret_path}")
+main_tmp="${persistSubDir}/config_main.json.new"
+
+curl -sL "$main_url" | subpipe convert -f singbox --template "${main_template}" -o "${main_tmp}"
+
+if [ -s "${main_tmp}" ]; then
+  # 用 jq 设置 Dashboard 为 metacubexd
+  jq --arg dashboard "${dashboard_path}" '.experimental.clash_api.external_ui = $dashboard' "${main_tmp}" > "${main_tmp}.tmp"
+  mv "${main_tmp}.tmp" "${main_tmp}"
+
+  echo "[singbox-update] Main subscription update successful."
 else
-  echo "Warning: Update fetch failed or produced an empty file. Keeping existing config."
-  rm -f ${configTmpFile} # Clean up the failed artifact
-  exit 0                 # Exit successfully without applying changes or reloading
+  echo "[singbox-update] Warning: Main subscription fetch failed."
+  rm -f "${main_tmp}"
 fi
 
-# check valid nodes
-HAS_VALID_NODES=$(jq '.outbounds | any(.type == "vmess" or .type == "shadowsocks" or .type == "trojan" or .type == "hysteria" or .type == "hysteria2") ' ${configTmpFile})
+# ========== 备份订阅 ==========
+echo "[singbox-update] Processing backup subscription..."
+backup_url=$(cat "${backup_secret_path}")
+backup_tmp="${persistSubDir}/config_backup.json.new"
 
-if [ "$HAS_VALID_NODES" = "true" ]; then
-  echo "Found valid nodes. Reloading service."
-  mv ${configTmpFile} ${configFile}
+curl -sL "$backup_url" | subpipe convert -f singbox --template "${backup_template}" -o "${backup_tmp}"
+
+if [ -s "${backup_tmp}" ]; then
+  # 用 jq 设置 Dashboard 为 metacubexd
+  jq --arg dashboard "${dashboard_path}" '.experimental.clash_api.external_ui = $dashboard' "${backup_tmp}" > "${backup_tmp}.tmp"
+  mv "${backup_tmp}.tmp" "${backup_tmp}"
+
+  echo "[singbox-update] Backup subscription update successful."
 else
-  echo "No valid node found. Keeping existing config."
-  rm -f ${configTmpFile} # Clean up the failed artifact
-  exit 0                 # Exit successfully without applying changes or reloading
+  echo "[singbox-update] Warning: Backup subscription fetch failed."
+  rm -f "${backup_tmp}"
 fi
 
-# Finalize permissions and reload. This only runs on successful update.
-echo "Finalizing permissions and reloading service."
-chown singbox:singbox ${configFile}
-systemctl reload-or-try-restart singbox.service
+# ========== 应用配置并验证节点 ==========
+# 主订阅
+if [ -s "${main_tmp}" ]; then
+  HAS_VALID_NODES=$(jq '.outbounds | any(.type == "vmess" or .type == "shadowsocks" or .type == "trojan" or .type == "hysteria" or .type == "hysteria2") ' "${main_tmp}")
+
+  if [ "$HAS_VALID_NODES" = "true" ]; then
+    echo "[singbox-update] Main: found valid nodes. Updating config."
+    mv "${main_tmp}" "${persistSubDir}/config_main.json"
+    chown singbox:singbox "${persistSubDir}/config_main.json"
+  else
+    echo "[singbox-update] Main: no valid node found. Keeping existing config."
+    rm -f "${main_tmp}"
+  fi
+fi
+
+# 备份订阅
+if [ -s "${backup_tmp}" ]; then
+  HAS_VALID_NODES=$(jq '.outbounds | any(.type == "vmess" or .type == "shadowsocks" or .type == "trojan" or .type == "hysteria" or .type == "hysteria2") ' "${backup_tmp}")
+
+  if [ "$HAS_VALID_NODES" = "true" ]; then
+    echo "[singbox-update] Backup: found valid nodes. Updating config."
+    mv "${backup_tmp}" "${persistSubDir}/config_backup.json"
+    chown singbox:singbox "${persistSubDir}/config_backup.json"
+  else
+    echo "[singbox-update] Backup: no valid node found. Keeping existing config."
+    rm -f "${backup_tmp}"
+  fi
+fi
+
+# ========== Reload 服务 ==========
+echo "[singbox-update] Reloading services..."
+systemctl reload-or-try-restart singbox.service || true
+systemctl reload-or-try-restart singbox-backup.service || true
+
+echo "[singbox-update] Done."

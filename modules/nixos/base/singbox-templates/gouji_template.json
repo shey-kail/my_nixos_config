@@ -1,0 +1,724 @@
+{
+  "log": {
+    "level": "error",
+    "timestamp": true
+  },
+  "dns": {
+    "servers": [
+      {
+        "type": "tcp",
+        "tag": "dns_proxy",
+        "server": "1.1.1.1",
+        "detour": "🚀 节点选择",
+        "domain_resolver": "dns_resolver"
+      },
+      {
+        "type": "https",
+        "tag": "dns_direct",
+        "server": "dns.alidns.com",
+        "domain_resolver": "dns_resolver"
+      },
+      {
+        "type": "udp",
+        "tag": "dns_resolver",
+        "server": "223.5.5.5"
+      },
+      {
+        "type": "fakeip",
+        "tag": "dns_fakeip",
+        "inet4_range": "198.18.0.0/15",
+        "inet6_range": "fc00::/18"
+      }
+    ],
+    "rules": [
+      {
+        "rule_set": "geolocation-!cn",
+        "query_type": [
+          "A",
+          "AAAA"
+        ],
+        "server": "dns_fakeip"
+      },
+      {
+        "rule_set": "geolocation-!cn",
+        "query_type": "CNAME",
+        "server": "dns_proxy"
+      },
+      {
+        "query_type": [
+          "A",
+          "AAAA",
+          "CNAME"
+        ],
+        "invert": true,
+        "action": "predefined",
+        "rcode": "REFUSED"
+      }
+    ],
+    "final": "dns_direct",
+    "independent_cache": true
+  },
+  "ntp": {
+    "enabled": true,
+    "server": "time.apple.com",
+    "server_port": 123,
+    "interval": "30m"
+  },
+  "inbounds": [
+    {
+      "type": "mixed",
+      "tag": "mixed-in",
+      "listen": "0.0.0.0",
+      "listen_port": 9050
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "selector",
+      "tag": "🚀 节点选择",
+      "outbounds": [
+        "⚡ 自动选择",
+        "🖐️ 手动切换",
+        "🇦🇺 澳洲",
+        "🇭🇰 香港",
+        "🇯🇵 日本",
+        "🇰🇷 韩国",
+        "🇸🇬 狮城",
+        "🇹🇼 台湾",
+        "🇬🇧 英国",
+        "🇺🇸 美国",
+        "🇻🇳 越南",
+        "🏠 住宅",
+        "🎯 直接连接",
+        "⛔ 拒绝连接"
+      ]
+    },
+    {
+      "type": "urltest",
+      "tag": "⚡ 自动选择",
+      "outbounds": [
+        "{{ALL-TAG}}"
+      ]
+    },
+    {
+      "type": "selector",
+      "tag": "🖐️ 手动切换",
+      "outbounds": [
+        "{{ALL-TAG}}"
+      ]
+    },
+    {
+      "type": "block",
+      "tag": "⛔ 拒绝连接"
+    },
+    {
+      "type": "direct",
+      "tag": "🎯 直接连接"
+    },
+    {
+      "tag": "🇦🇺 澳洲",
+      "type": "urltest",
+      "outbounds": [
+        "{{INCLUDE-TAG:澳大利亚} & {EXCLUDE-TAG:住宅}}"
+      ]
+    },
+    {
+      "tag": "🇭🇰 香港",
+      "type": "urltest",
+      "outbounds": [
+        "{{INCLUDE-TAG:香港} & {EXCLUDE-TAG:住宅}}"
+      ]
+    },
+    {
+      "tag": "🇯🇵 日本",
+      "type": "urltest",
+      "outbounds": [
+        "{{INCLUDE-TAG:日本} & {EXCLUDE-TAG:住宅}}"
+      ]
+    },
+    {
+      "tag": "🇰🇷 韩国",
+      "type": "urltest",
+      "outbounds": [
+        "{{INCLUDE-TAG:韩国} & {EXCLUDE-TAG:住宅}}"
+      ]
+    },
+    {
+      "tag": "🇸🇬 狮城",
+      "type": "urltest",
+      "outbounds": [
+        "{{INCLUDE-TAG:新加坡} & {EXCLUDE-TAG:住宅}}"
+      ]
+    },
+    {
+      "tag": "🇹🇼 台湾",
+      "type": "urltest",
+      "outbounds": [
+        "{{INCLUDE-TAG:台湾} & {EXCLUDE-TAG:住宅}}"
+      ]
+    },
+    {
+      "tag": "🇬🇧 英国",
+      "type": "urltest",
+      "outbounds": [
+        "{{INCLUDE-TAG:英国} & {EXCLUDE-TAG:住宅}}"
+      ]
+    },
+    {
+      "tag": "🇺🇸 美国",
+      "type": "urltest",
+      "outbounds": [
+        "{{INCLUDE-TAG:美国} & {EXCLUDE-TAG:住宅}}"
+      ]
+    },
+    {
+      "tag": "🇻🇳 越南",
+      "type": "urltest",
+      "outbounds": [
+        "{{INCLUDE-TAG:越南} & {EXCLUDE-TAG:住宅}}"
+      ]
+    },
+    {
+      "tag": "🇨🇭 瑞士",
+      "type": "urltest",
+      "outbounds": [
+        "{{INCLUDE-TAG:瑞士} & {EXCLUDE-TAG:住宅}}"
+      ]
+    },
+    {
+      "tag": "🇮🇳 印度",
+      "type": "urltest",
+      "outbounds": [
+        "{{INCLUDE-TAG:印度} & {EXCLUDE-TAG:住宅}}"
+      ]
+    },
+    {
+      "tag": "🇲🇾 马来",
+      "type": "urltest",
+      "outbounds": [
+        "{{INCLUDE-TAG:马来西亚} & {EXCLUDE-TAG:住宅}}"
+      ]
+    },
+    {
+      "tag": "🏠 住宅",
+      "type": "urltest",
+      "outbounds": [
+        "{{INCLUDE-TAG:住宅}}"
+      ]
+    },
+    {
+      "type": "selector",
+      "tag": "💬 AI 服务",
+      "default": "🏠 住宅",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 自动选择",
+        "🇦🇺 澳洲",
+        "🇭🇰 香港",
+        "🇯🇵 日本",
+        "🇰🇷 韩国",
+        "🇸🇬 狮城",
+        "🇹🇼 台湾",
+        "🇬🇧 英国",
+        "🇺🇸 美国",
+        "🇻🇳 越南",
+        "🇨🇭 瑞士",
+        "🇮🇳 印度",
+        "🇲🇾 马来",
+        "🏠 住宅",
+        "🎯 直接连接",
+        "⛔ 拒绝连接"
+      ]
+    },
+    {
+      "type": "selector",
+      "tag": "📹 油管视频",
+      "default": "⚡ 自动选择",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 自动选择",
+        "🇦🇺 澳洲",
+        "🇭🇰 香港",
+        "🇯🇵 日本",
+        "🇰🇷 韩国",
+        "🇸🇬 狮城",
+        "🇹🇼 台湾",
+        "🇬🇧 英国",
+        "🇺🇸 美国",
+        "🇻🇳 越南",
+        "🇨🇭 瑞士",
+        "🇮🇳 印度",
+        "🇲🇾 马来",
+        "🏠 住宅",
+        "🎯 直接连接",
+        "⛔ 拒绝连接"
+      ]
+    },
+    {
+      "type": "selector",
+      "tag": "🔍 谷歌服务",
+      "default": "🚀 节点选择",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 自动选择",
+        "🇦🇺 澳洲",
+        "🇭🇰 香港",
+        "🇯🇵 日本",
+        "🇰🇷 韩国",
+        "🇸🇬 狮城",
+        "🇹🇼 台湾",
+        "🇬🇧 英国",
+        "🇺🇸 美国",
+        "🇻🇳 越南",
+        "🇮🇳 印度",
+        "🇲🇾 马来",
+        "🏠 住宅",
+        "🎯 直接连接",
+        "⛔ 拒绝连接"
+      ]
+    },
+    {
+      "type": "selector",
+      "tag": "🏠 私有网络",
+      "default": "🎯 直接连接",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 自动选择",
+        "🇦🇺 澳洲",
+        "🇭🇰 香港",
+        "🇯🇵 日本",
+        "🇰🇷 韩国",
+        "🇸🇬 狮城",
+        "🇹🇼 台湾",
+        "🇬🇧 英国",
+        "🇺🇸 美国",
+        "🇻🇳 越南",
+        "🇮🇳 印度",
+        "🇲🇾 马来",
+        "🏠 住宅",
+        "🎯 直接连接",
+        "⛔ 拒绝连接"
+      ]
+    },
+    {
+      "type": "selector",
+      "tag": "🔒 国内服务",
+      "default": "🎯 直接连接",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 自动选择",
+        "🇦🇺 澳洲",
+        "🇭🇰 香港",
+        "🇯🇵 日本",
+        "🇰🇷 韩国",
+        "🇸🇬 狮城",
+        "🇹🇼 台湾",
+        "🇬🇧 英国",
+        "🇺🇸 美国",
+        "🇻🇳 越南",
+        "🇮🇳 印度",
+        "🇲🇾 马来",
+        "🏠 住宅",
+        "🎯 直接连接",
+        "⛔ 拒绝连接"
+      ]
+    },
+    {
+      "type": "selector",
+      "tag": "📲 电报消息",
+      "default": "⚡ 自动选择",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 自动选择",
+        "🇦🇺 澳洲",
+        "🇭🇰 香港",
+        "🇯🇵 日本",
+        "🇰🇷 韩国",
+        "🇸🇬 狮城",
+        "🇹🇼 台湾",
+        "🇬🇧 英国",
+        "🇺🇸 美国",
+        "🇻🇳 越南",
+        "🇮🇳 印度",
+        "🇲🇾 马来",
+        "🏠 住宅",
+        "🎯 直接连接",
+        "⛔ 拒绝连接"
+      ]
+    },
+    {
+      "type": "selector",
+      "tag": "🐱 Github",
+      "default": "🚀 节点选择",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 自动选择",
+        "🇦🇺 澳洲",
+        "🇭🇰 香港",
+        "🇯🇵 日本",
+        "🇰🇷 韩国",
+        "🇸🇬 狮城",
+        "🇹🇼 台湾",
+        "🇬🇧 英国",
+        "🇺🇸 美国",
+        "🇻🇳 越南",
+        "🇮🇳 印度",
+        "🇲🇾 马来",
+        "🏠 住宅",
+        "🎯 直接连接",
+        "⛔ 拒绝连接"
+      ]
+    },
+    {
+      "type": "selector",
+      "tag": "🎬 流媒体",
+      "default": "🚀 节点选择",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 自动选择",
+        "🇦🇺 澳洲",
+        "🇭🇰 香港",
+        "🇯🇵 日本",
+        "🇰🇷 韩国",
+        "🇸🇬 狮城",
+        "🇹🇼 台湾",
+        "🇬🇧 英国",
+        "🇺🇸 美国",
+        "🇻🇳 越南",
+        "🇮🇳 印度",
+        "🇲🇾 马来",
+        "🏠 住宅",
+        "🎯 直接连接",
+        "⛔ 拒绝连接"
+      ]
+    },
+    {
+      "type": "selector",
+      "tag": "☁️ 云服务",
+      "default": "⚡ 自动选择",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 自动选择",
+        "🇦🇺 澳洲",
+        "🇭🇰 香港",
+        "🇯🇵 日本",
+        "🇰🇷 韩国",
+        "🇸🇬 狮城",
+        "🇹🇼 台湾",
+        "🇬🇧 英国",
+        "🇺🇸 美国",
+        "🇻🇳 越南",
+        "🇮🇳 印度",
+        "🇲🇾 马来",
+        "🏠 住宅",
+        "🎯 直接连接",
+        "⛔ 拒绝连接"
+      ]
+    },
+    {
+      "type": "selector",
+      "tag": "🌐 非中国",
+      "default": "🚀 节点选择",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 自动选择",
+        "🇦🇺 澳洲",
+        "🇭🇰 香港",
+        "🇯🇵 日本",
+        "🇰🇷 韩国",
+        "🇸🇬 狮城",
+        "🇹🇼 台湾",
+        "🇬🇧 英国",
+        "🇺🇸 美国",
+        "🇻🇳 越南",
+        "🇮🇳 印度",
+        "🇲🇾 马来",
+        "🏠 住宅",
+        "🎯 直接连接",
+        "⛔ 拒绝连接"
+      ]
+    },
+    {
+      "type": "selector",
+      "tag": "🐟 漏网之鱼",
+      "default": "🚀 节点选择",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 自动选择",
+        "🇦🇺 澳洲",
+        "🇭🇰 香港",
+        "🇯🇵 日本",
+        "🇰🇷 韩国",
+        "🇸🇬 狮城",
+        "🇹🇼 台湾",
+        "🇬🇧 英国",
+        "🇺🇸 美国",
+        "🇻🇳 越南",
+        "🇮🇳 印度",
+        "🇲🇾 马来",
+        "🏠 住宅",
+        "🎯 直接连接",
+        "⛔ 拒绝连接"
+      ]
+    }
+  ],
+  "route": {
+    "default_domain_resolver": "dns_resolver",
+    "rule_set": [
+      {
+        "tag": "category-ai-!cn",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-category-ai-!cn.srs"
+      },
+      {
+        "tag": "youtube",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-youtube.srs"
+      },
+      {
+        "tag": "google",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-google.srs"
+      },
+      {
+        "tag": "geolocation-cn",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-geolocation-cn.srs"
+      },
+      {
+        "tag": "cn",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-cn.srs"
+      },
+      {
+        "tag": "github",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-github.srs"
+      },
+      {
+        "tag": "gitlab",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-gitlab.srs"
+      },
+      {
+        "tag": "netflix",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-netflix.srs"
+      },
+      {
+        "tag": "hulu",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-hulu.srs"
+      },
+      {
+        "tag": "disney",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-disney.srs"
+      },
+      {
+        "tag": "hbo",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-hbo.srs"
+      },
+      {
+        "tag": "amazon",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-amazon.srs"
+      },
+      {
+        "tag": "bahamut",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-bahamut.srs"
+      },
+      {
+        "tag": "aws",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-aws.srs"
+      },
+      {
+        "tag": "azure",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-azure.srs"
+      },
+      {
+        "tag": "digitalocean",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-digitalocean.srs"
+      },
+      {
+        "tag": "heroku",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-heroku.srs"
+      },
+      {
+        "tag": "dropbox",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-dropbox.srs"
+      },
+      {
+        "tag": "geolocation-!cn",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-geolocation-!cn.srs"
+      },
+      {
+        "tag": "google-ip",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-google.srs"
+      },
+      {
+        "tag": "private-ip",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-private.srs"
+      },
+      {
+        "tag": "cn-ip",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-cn.srs"
+      },
+      {
+        "tag": "telegram-ip",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-telegram.srs"
+      }
+    ],
+    "rules": [
+      {
+        "clash_mode": "direct",
+        "outbound": "🎯 直接连接"
+      },
+      {
+        "clash_mode": "global",
+        "outbound": "🚀 节点选择"
+      },
+      {
+        "action": "sniff"
+      },
+      {
+        "protocol": "dns",
+        "action": "hijack-dns"
+      },
+      {
+        "rule_set": [
+          "category-ai-!cn"
+        ],
+        "outbound": "💬 AI 服务"
+      },
+      {
+        "rule_set": [
+          "youtube"
+        ],
+        "outbound": "📹 油管视频"
+      },
+      {
+        "rule_set": [
+          "google"
+        ],
+        "outbound": "🔍 谷歌服务"
+      },
+      {
+        "rule_set": [
+          "geolocation-cn",
+          "cn"
+        ],
+        "outbound": "🔒 国内服务"
+      },
+      {
+        "rule_set": [
+          "github",
+          "gitlab"
+        ],
+        "outbound": "🐱 Github"
+      },
+      {
+        "rule_set": [
+          "netflix",
+          "hulu",
+          "disney",
+          "hbo",
+          "amazon",
+          "bahamut"
+        ],
+        "outbound": "🎬 流媒体"
+      },
+      {
+        "rule_set": [
+          "aws",
+          "azure",
+          "digitalocean",
+          "heroku",
+          "dropbox"
+        ],
+        "outbound": "☁️ 云服务"
+      },
+      {
+        "rule_set": [
+          "geolocation-!cn"
+        ],
+        "outbound": "🌐 非中国"
+      },
+      {
+        "rule_set": [
+          "google-ip"
+        ],
+        "outbound": "🔍 谷歌服务"
+      },
+      {
+        "rule_set": [
+          "private-ip"
+        ],
+        "outbound": "🏠 私有网络"
+      },
+      {
+        "rule_set": [
+          "cn-ip"
+        ],
+        "outbound": "🔒 国内服务"
+      },
+      {
+        "rule_set": [
+          "telegram-ip"
+        ],
+        "outbound": "📲 电报消息"
+      }
+    ],
+    "auto_detect_interface": true,
+    "final": "🐟 漏网之鱼"
+  },
+  "experimental": {
+    "cache_file": {
+      "enabled": true,
+      "store_fakeip": true
+    },
+    "clash_api": {
+      "external_controller": "0.0.0.0:9090",
+      "external_ui": "{NIX_UI}",
+      "external_ui_download_url": null,
+      "external_ui_download_detour": "🎯 直接连接",
+      "secret": "",
+      "default_mode": "rule"
+    }
+  }
+}
