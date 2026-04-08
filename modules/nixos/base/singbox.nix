@@ -85,6 +85,7 @@ in
     wantedBy = [ "multi-user.target" ];
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
+    conflicts = [ "singbox-backup.service" ];
 
     path = [ pkgs.systemd ];
 
@@ -128,6 +129,7 @@ in
     wantedBy = [ "multi-user.target" ];
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
+    conflicts = [ "singbox.service" ];
 
     path = [ pkgs.systemd ];
 
