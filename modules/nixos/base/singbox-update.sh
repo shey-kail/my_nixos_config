@@ -61,11 +61,11 @@ echo "[singbox-update] Processing main subscription..."
 main_url=$(cat "${main_secret_path}")
 main_tmp="${persistSubDir}/config_main.json.new"
 
-curl -sL "$main_url" | subpipe convert -f singbox --template "${main_template}" -o "${main_tmp}"
+curl -sL "$main_url" | base64 -d | subpipe convert -f singbox --template "${main_template}" -o "${main_tmp}"
 
 if [ -s "${main_tmp}" ]; then
   # 用 jq 设置 Dashboard 为 metacubexd
-  jq --arg dashboard "${dashboard_path}" '.experimental.clash_api.external_ui = $dashboard' "${main_tmp}" > "${main_tmp}.tmp"
+  jq --arg dashboard "${dashboard_path}" '.experimental.clash_api.external_ui = $dashboard' "${main_tmp}" >"${main_tmp}.tmp"
   mv "${main_tmp}.tmp" "${main_tmp}"
 
   echo "[singbox-update] Main subscription update successful."
@@ -79,11 +79,11 @@ echo "[singbox-update] Processing backup subscription..."
 backup_url=$(cat "${backup_secret_path}")
 backup_tmp="${persistSubDir}/config_backup.json.new"
 
-curl -sL "$backup_url" | subpipe convert -f singbox --template "${backup_template}" -o "${backup_tmp}"
+curl -sL "$backup_url" | base64 -d | subpipe convert -f singbox --template "${backup_template}" -o "${backup_tmp}"
 
 if [ -s "${backup_tmp}" ]; then
   # 用 jq 设置 Dashboard 为 metacubexd
-  jq --arg dashboard "${dashboard_path}" '.experimental.clash_api.external_ui = $dashboard' "${backup_tmp}" > "${backup_tmp}.tmp"
+  jq --arg dashboard "${dashboard_path}" '.experimental.clash_api.external_ui = $dashboard' "${backup_tmp}" >"${backup_tmp}.tmp"
   mv "${backup_tmp}.tmp" "${backup_tmp}"
 
   echo "[singbox-update] Backup subscription update successful."
