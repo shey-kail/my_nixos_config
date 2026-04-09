@@ -26,7 +26,7 @@
       jsonnet
       jsonnet-language-server
       taplo # TOML language server / formatter / validator
-      nodePackages.yaml-language-server
+      yaml-language-server
       actionlint # GitHub Actions linter
 
       #-- markdown
@@ -81,23 +81,23 @@
       lua-language-server
 
       #-- bash
-      nodePackages.bash-language-server
+      pkgs-unstable.bash-language-server
       shellcheck
       shfmt
     ]
     #-*- Web Development -*-#
     ++ [
-      nodePackages.nodejs
-      nodePackages.typescript
-      nodePackages.typescript-language-server
+      nodejs
+      pkgs-unstable.typescript
+      pkgs-unstable.typescript-language-server
       # HTML/CSS/JSON/ESLint language servers extracted from vscode
-      nodePackages.vscode-langservers-extracted
-      nodePackages."@tailwindcss/language-server"
+      vscode-langservers-extracted
+      pkgs-unstable.tailwindcss-language-server
       emmet-ls
     ]
     ++ [
       #-- Optional Requirements:
-      nodePackages.prettier # common code formatter
+      pkgs-unstable.prettier # common code formatter
       fzf
       (ripgrep.override {withPCRE2 = true;}) # recursively searches directories for a regex pattern
     ]
