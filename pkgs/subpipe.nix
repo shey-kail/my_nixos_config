@@ -5,16 +5,16 @@
 }:
 rustPlatform.buildRustPackage rec {
   pname = "subpipe";
-  version = "2.0.0";
+  version = "2.1.0";
 
   src = fetchFromGitHub {
     owner = "shey-kail";
     repo = "subpipe";
     rev = "v${version}";
-    hash = "sha256-Dz95P+rYycq98/e+zkv8MyCxBFsxyTxpH7Ic6iuhnc8=";
+    hash = "sha256-jcpQuGm145ViqWcwi972gwUBX0tqJKZyel+2//B9QD4=";
   };
 
-  cargoHash = "sha256-lUt12gUqUGCC3Lm/fI1SQNoQW83RP+17yqnisfpJnJk=";
+  cargoHash = "sha256-sB/oJJH6tLZY0KQbZR7AajFMASB87J5A6UjC8lmnQ+g=";
 
   doCheck = false;
 
