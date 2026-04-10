@@ -86,6 +86,7 @@ in
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
     conflicts = [ "singbox-backup.service" ];
+    partOf = [ "dae.service" ];
 
     path = [ pkgs.systemd ];
 
@@ -130,6 +131,7 @@ in
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
     conflicts = [ "singbox.service" ];
+    partOf = [ "dae.service" ];
 
     path = [ pkgs.systemd ];
 
