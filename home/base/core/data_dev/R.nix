@@ -1,7 +1,8 @@
 {
   pkgs,
   ...
-}: let
+}:
+let
   # Create a local pkgs instance that allows broken packages
   # This is much cleaner than a global nixpkgs.config.allowBroken = true;
   # because it only affects THIS specific R environment.
@@ -10,7 +11,7 @@
     config = pkgs.config // {
       allowBroken = true;
     };
-    # We should also pass overlays if they are needed, 
+    # We should also pass overlays if they are needed,
     # but here we can just use the base packages since we want unigd.
   };
 
@@ -40,9 +41,23 @@
       CMplot
       RIdeogram
       languageserver
+
+      DiffBind
+      csaw
+      osmdata
+      sf
+
+      showtext
+      ggspatial
+      ggrepel
+      stargazer
+      quantreg
+      scatterplot3d
+      rgl
     ];
   };
-in {
+in
+{
   home.packages = [
     R-with-my-packages
   ];
