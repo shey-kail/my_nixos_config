@@ -21,13 +21,11 @@
 
       # use unstable branch for some packages to get the latest updates
       pkgs-unstable = import inputs.nixpkgs {
-        inherit system; # refer the `system` parameter form outer scope recursively
-        # To use chrome, we need to allow the installation of non-free software
+        inherit system overlays;
         config.allowUnfree = true;
       };
       pkgs-stable = import inputs.nixpkgs-stable {
-        inherit system;
-        # To use chrome, we need to allow the installation of non-free software
+        inherit system overlays;
         config.allowUnfree = true;
       };
     };
