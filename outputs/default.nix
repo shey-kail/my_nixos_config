@@ -7,27 +7,28 @@
   inherit (inputs.nixpkgs) lib;
   mylib = import ../lib {inherit lib;};
   myvars = import ../vars {inherit lib;};
-  overlays = [
+  # overlays are defined here but used only in modules/base.nix
+  myOverlays = [
     inputs.nur.overlays.default
     (import ../overlays)
   ];
 
-  # Add my custom lib, vars, nixpkgs instance, and all the inputs to specialArgs,
-  # so that I can use them in all my nixos/home-manager/darwin modules.
   genSpecialArgs = system:
     inputs
     // {
-      inherit mylib myvars overlays;
+      inherit mylib myvars;
 
       # use unstable branch for some packages to get the latest updates
       pkgs-unstable = import inputs.nixpkgs {
-        inherit system overlays;
+        inherit system;
         config.allowUnfree = true;
       };
       pkgs-stable = import inputs.nixpkgs-stable {
-        inherit system overlays;
+        inherit system;
         config.allowUnfree = true;
       };
+
+      overlays = myOverlays;
     };
 
   # This is the args for all the haumea modules in this folder.
