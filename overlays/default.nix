@@ -3,8 +3,8 @@ let
   inherit (lib) strings;
   inherit (lib.attrsets) filterAttrs attrNames;
   overlayDir = ./overlay;
-  isOverlayFile = path: type:
-    type == "regular" && strings.hasSuffix ".nix" path;
-  files = attrNames (filterAttrs isOverlayFile (builtins.readDir overlayDir));
+  files = attrNames (filterAttrs (path: type:
+    type == "regular" && strings.hasSuffix ".nix" path
+  ) (builtins.readDir overlayDir));
 in
-  map (f: import (overlayDir + "/${f}")) files
+  map (f: import (toString overlayDir + "/${f}")) files
