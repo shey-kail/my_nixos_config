@@ -9,9 +9,7 @@
   myvars = import ../vars {inherit lib;};
   overlays = [
     inputs.nur.overlays.default
-    (import ../overlays/r-packages.nix)
-    (import ../overlays/openldap.nix)
-    (final: prev: import ../pkgs { inherit lib; pkgs = prev; })
+    (import ../overlays)
   ];
 
   # Add my custom lib, vars, nixpkgs instance, and all the inputs to specialArgs,

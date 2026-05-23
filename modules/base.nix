@@ -5,11 +5,8 @@
   myvars,
   mylib,
   ...
-}:
-let
-  overlays = import ../overlays { inherit inputs lib; };
-in {
-  nixpkgs.overlays = overlays;
+}: {
+  nixpkgs.overlays = import ../overlays { inherit inputs lib; };
 
   # auto upgrade nix to the unstable version
   # https://github.com/NixOS/nixpkgs/blob/nixos-unstable/pkgs/tools/package-management/nix/default.nix#L284
