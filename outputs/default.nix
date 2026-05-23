@@ -8,27 +8,9 @@
   mylib = import ../lib {inherit lib;};
   myvars = import ../vars {inherit lib;};
   # overlays for nixpkgs
-  myOverlays = [
-    inputs.nur.overlays.default
-    (final: prev: {
-      rPackages = prev.rPackages // {
-        httpgd = prev.rPackages.httpgd.overrideAttrs (oldAttrs: {
-          meta = (oldAttrs.meta or { }) // { broken = false; };
-        });
-        unigd = prev.rPackages.unigd.overrideAttrs (oldAttrs: {
-          meta = (oldAttrs.meta or { }) // { broken = false; };
-        });
-      };
-    })
-    (final: prev: {
-      openldap = prev.openldap.overrideAttrs {
-        doCheck = !prev.stdenv.hostPlatform.isi686;
-      };
-    })
-    (final: prev: {
-      subpipe = prev.callPackage ../pkgs/subpipe.nix {};
-    })
-  ];
+  myOverlays =
+    [inputs.nur.overlays.default]
+    ++ (import ../overlays);
 
   genSpecialArgs = system:
     inputs
