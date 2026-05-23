@@ -1,3 +1,3 @@
 final: prev: {
-  subpipe = prev.callPackage ../pkgs/subpipe.nix {};
+  subpipe = prev.callPackage ../../pkgs/subpipe.nix {};
 }

@@ -9,8 +9,11 @@
   myvars = import ../vars {inherit lib;};
   # overlays for nixpkgs
   myOverlays =
-    [inputs.nur.overlays.default]
-    ++ (import ../overlays);
+    let
+      inherit (inputs) nur;
+      scanOverlays = import ../overlays { inherit inputs lib; };
+    in
+    [inputs.nur.overlays.default] ++ scanOverlays;
 
   genSpecialArgs = system:
     inputs
