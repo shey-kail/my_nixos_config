@@ -1,8 +1,10 @@
 {inputs, lib, ...}:
 let
+  inherit (lib) strings;
+  inherit (lib.attrsets) filterAttrs attrNames;
   overlayPath = ./.;
   isOverlayFile = path: type:
-    type == "regular" && path != "default.nix" && lib.strings.hasSuffix ".nix" path;
+    type == "regular" && path != "default.nix" && strings.hasSuffix ".nix" path;
 in
   map (path: import (overlayPath + "/${path}"))
-    (builtins.attrNames (lib.attrsets.filterAttrs isOverlayFile (builtins.readDir overlayPath)))
+    (attrNames (filterAttrs isOverlayFile (builtins.readDir overlayPath)))

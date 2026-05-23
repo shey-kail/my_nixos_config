@@ -4,10 +4,9 @@
   pkgs,
   myvars,
   mylib,
-  overlays,
   ...
 }: {
-  nixpkgs.overlays = overlays;
+  # nixpkgs.overlays set via specialArgs in outputs/default.nix
 
   # auto upgrade nix to the unstable version
   # https://github.com/NixOS/nixpkgs/blob/nixos-unstable/pkgs/tools/package-management/nix/default.nix#L284
