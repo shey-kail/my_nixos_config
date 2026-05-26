@@ -1,7 +1,8 @@
-{ ...}:
+{ ... }:
 let
   hostName = "wujie"; # Define your hostname.
-in {
+in
+{
   imports = [
     ./netdev-mount.nix
     # Include the results of the hardware scan.

@@ -3,19 +3,21 @@
   nixpkgs,
   pre-commit-hooks,
   ...
-} @ inputs: let
+}@inputs:
+let
   inherit (inputs.nixpkgs) lib;
-  mylib = import ../lib {inherit lib;};
-  myvars = import ../vars {inherit lib;};
+  mylib = import ../lib { inherit lib; };
+  myvars = import ../vars { inherit lib; };
   # overlays for nixpkgs
   myOverlays =
     let
       inherit (inputs) nur;
       scanOverlays = import ../overlays { inherit inputs lib; };
     in
-    [inputs.nur.overlays.default] ++ scanOverlays;
+    [ inputs.nur.overlays.default ] ++ scanOverlays;
 
-  genSpecialArgs = system:
+  genSpecialArgs =
+    system:
     inputs
     // {
       inherit mylib myvars;
@@ -34,11 +36,19 @@
     };
 
   # This is the args for all the haumea modules in this folder.
-  args = {inherit inputs lib mylib myvars genSpecialArgs;};
+  args = {
+    inherit
+      inputs
+      lib
+      mylib
+      myvars
+      genSpecialArgs
+      ;
+  };
 
   # modules for each supported system
   nixosSystems = {
-    x86_64-linux = import ./x86_64-linux (args // {system = "x86_64-linux";});
+    x86_64-linux = import ./x86_64-linux (args // { system = "x86_64-linux"; });
     # aarch64-linux = import ./aarch64-linux (args // {system = "aarch64-linux";});
     # riscv64-linux = import ./riscv64-linux (args // {system = "riscv64-linux";});
   };
@@ -54,58 +64,65 @@
 
   # Helper function to generate a set of attributes for each system
   forAllSystems = func: (nixpkgs.lib.genAttrs allSystemNames func);
-in {
+in
+{
   # Add attribute sets into outputs, for debugging
-  debugAttrs = {inherit nixosSystems darwinSystems allSystems allSystemNames;};
+  debugAttrs = {
+    inherit
+      nixosSystems
+      darwinSystems
+      allSystems
+      allSystemNames
+      ;
+  };
 
   # NixOS Hosts
-  nixosConfigurations =
-    lib.attrsets.mergeAttrsList (map (it: it.nixosConfigurations or {}) nixosSystemValues);
+  nixosConfigurations = lib.attrsets.mergeAttrsList (
+    map (it: it.nixosConfigurations or { }) nixosSystemValues
+  );
 
   # Packages
-  packages = forAllSystems (
-    system: allSystems.${system}.packages or {}
-  );
+  packages = forAllSystems (system: allSystems.${system}.packages or { });
 
   # Eval Tests for all NixOS & darwin systems.
-  evalTests = lib.lists.all (it: it.evalTests == {}) allSystemValues;
+  evalTests = lib.lists.all (it: it.evalTests == { }) allSystemValues;
 
-  checks = forAllSystems (
-    system: {
-      # eval-tests per system
-      eval-tests = allSystems.${system}.evalTests == {};
+  checks = forAllSystems (system: {
+    # eval-tests per system
+    eval-tests = allSystems.${system}.evalTests == { };
 
-      pre-commit-check = pre-commit-hooks.lib.${system}.run {
-        src = mylib.relativeToRoot ".";
-        hooks = {
-          alejandra.enable = true; # formatter
-          # Source code spell checker
-          typos = {
-            enable = true;
-            settings = {
-              write = true; # Automatically fix typos
-              configPath = "./.typos.toml"; # relative to the flake root
-            };
+    pre-commit-check = pre-commit-hooks.lib.${system}.run {
+      src = mylib.relativeToRoot ".";
+      hooks = {
+        alejandra.enable = true; # formatter
+        # Source code spell checker
+        typos = {
+          enable = true;
+          settings = {
+            write = true; # Automatically fix typos
+            configPath = "./.typos.toml"; # relative to the flake root
           };
-          prettier = {
-            enable = true;
-            settings = {
-              write = true; # Automatically format files
-              configPath = "./.prettierrc.yaml"; # relative to the flake root
-            };
-          };
-          # deadnix.enable = true; # detect unused variable bindings in `*.nix`
-          # statix.enable = true; # lints and suggestions for Nix code(auto suggestions)
         };
+        prettier = {
+          enable = true;
+          settings = {
+            write = true; # Automatically format files
+            configPath = "./.prettierrc.yaml"; # relative to the flake root
+          };
+        };
+        # deadnix.enable = true; # detect unused variable bindings in `*.nix`
+        # statix.enable = true; # lints and suggestions for Nix code(auto suggestions)
       };
-    }
-  );
+    };
+  });
 
   # Development Shells
   devShells = forAllSystems (
-    system: let
+    system:
+    let
       pkgs = nixpkgs.legacyPackages.${system};
-    in {
+    in
+    {
       default = pkgs.mkShell {
         packages = with pkgs; [
           # fix https://discourse.nixos.org/t/non-interactive-bash-errors-from-flake-nix-mkshell/33310

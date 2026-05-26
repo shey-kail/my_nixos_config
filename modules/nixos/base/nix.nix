@@ -6,6 +6,15 @@
   nixpkgs.config.allowUnfree = lib.mkForce true;
   #nixpkgs.config.allowUnsupportedSystem = lib.mkForce true;
 
+  # Allow insecure nodejs for backward compatibility
+  nixpkgs.config.permittedInsecurePackages = [
+    "nodejs-20.20.2"
+    "nodejs-slim-20.20.2"
+    "nodejs-20.19.1"
+    "nodejs_20"
+    "nodejs-20.20.2-source"
+  ];
+
   # do garbage collection weekly to keep disk usage low
   nix.gc = {
     automatic = lib.mkDefault true;
