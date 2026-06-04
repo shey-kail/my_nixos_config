@@ -12,6 +12,10 @@
 
   # use path relative to the root of the project
   relativeToRoot = lib.path.append ../.;
+
+  # scan pkgs/ for derivations; supports both pkgs/<name>.nix and pkgs/<dir>/default.nix
+  scanPkgs = import ./scanPkgs.nix { inherit lib; };
+
   scanPaths = path:
     builtins.map
     (f: (path + "/${f}"))

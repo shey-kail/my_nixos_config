@@ -3,7 +3,7 @@
 let
   ui-cfg = config.services.netflow-ui;
   netflow-cfg = config.services.netflow;
-  ui-script = pkgs.writeText "netflow-ui.py" (builtins.readFile ./ui.py);
+  ui-script = pkgs.writeText "netflow-ui.py" (builtins.readFile ./ui/app.py);
 in
 {
   options.services.netflow-ui = {

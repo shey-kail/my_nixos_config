@@ -82,7 +82,18 @@ in
   );
 
   # Packages
-  packages = forAllSystems (system: allSystems.${system}.packages or { });
+  packages = forAllSystems (system:
+    let
+      haumeaPkgs = if builtins.isFunction (allSystems.${system}.packages or {})
+                   then (allSystems.${system}.packages or {}) {}
+                   else allSystems.${system}.packages or {};
+      pkgsDir = ../pkgs;
+      basePkgs = import inputs.nixpkgs { inherit system; config.allowUnfree = true; };
+      scanPkgs = import ../lib/scanPkgs.nix { inherit (basePkgs) lib; };
+      scannedPkgs = scanPkgs { inherit pkgsDir; callPackage = basePkgs.callPackage; };
+    in
+      haumeaPkgs // scannedPkgs
+  );
 
   # Eval Tests for all NixOS & darwin systems.
   evalTests = lib.lists.all (it: it.evalTests == { }) allSystemValues;
