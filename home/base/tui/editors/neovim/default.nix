@@ -20,6 +20,14 @@ in {
     ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./nvim}/ ${config.xdg.configHome}/nvim/
   '';
 
+  # programs.neovim.enable 默认会隐式建一个 xdg.configFile."nvim/init.lua" 软链,
+  # 跟下面 rsync 抢同一个文件,会触发 checkLinkTargets 报"clobber"。
+  # 用 LazyVim 自己的 init.lua 显式接管,force 覆盖任何残留文件。
+  xdg.configFile."nvim/init.lua" = {
+    source = ./nvim/init.lua;
+    force = true;
+  };
+
   home.shellAliases = shellAliases;
 
   programs = {

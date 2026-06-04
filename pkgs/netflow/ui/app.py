@@ -1,105 +1,76 @@
-#!/usr/bin/env python3
-"""Simplified netflow web UI - proxies to backend API"""
+"""netflow web UI - Flask port of upstream LuCI controller (netflow.lua).
+
+Routes:
+  GET  /              render main page (template built from upstream main.htm)
+  POST /api           forward form to backend /api/{action} (KNOWN_KEYS whitelist)
+  POST /upload_core   forward multipart corefile to backend /api/core_install_upload
+"""
 
 import os
+
 import requests
-from flask import Flask, render_template_string, jsonify, request
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
-BACKEND_PORT = os.environ.get('NETFLOW_API_PORT', '9190')
-API_BASE = f'http://127.0.0.1:{BACKEND_PORT}'
+BACKEND_PORT = os.environ.get("NETFLOW_API_PORT", "9190")
+API_BASE = f"http://127.0.0.1:{BACKEND_PORT}"
 
-HTML_TEMPLATE = '''
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Netflow Control Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a2e; color: #eee; }
-    .container { max-width: 800px; margin: 0 auto; }
-    h1 { color: #00d4ff; }
-    .card { background: #16213e; padding: 20px; border-radius: 10px; margin: 10px 0; }
-    .status { display: flex; justify-content: space-between; }
-    .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
-    .btn-on { background: #00d4ff; color: #000; }
-    .btn-off { background: #e94560; color: #fff; }
-    .node { background: #0f3460; padding: 10px; margin: 5px 0; border-radius: 5px; }
-    .error { color: #e94560; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Netflow Control Panel</h1>
+# build-time 注入的模板路径(由 ui-module.nix 的 pkgs.substitute 生成)
+TEMPLATE_PATH = os.environ.get("NETFLOW_TEMPLATE", "")
+with open(TEMPLATE_PATH, encoding="utf-8") as _f:
+    TEMPLATE = _f.read()
 
-    <div class="card">
-      <h2>Service Status</h2>
-      <div class="status">
-        <span>Backend API:</span>
-        <span id="api-status">Checking...</span>
-      </div>
-    </div>
+# 对齐 upstream netflow.lua:action_api 接受的 known_keys(白名单防注入)
+KNOWN_KEYS = ("email", "password", "group", "node", "mode", "state", "run_mode", "source")
 
-    <div class="card">
-      <h2>Quick Actions</h2>
-      <button class="btn btn-on" onclick="switchMode('rule')">Rule Mode</button>
-      <button class="btn btn-on" onclick="switchMode('global')">Global Mode</button>
-      <button class="btn btn-off" onclick="switchMode('disable')">Disable</button>
-    </div>
 
-    <div class="card">
-      <h2>Nodes</h2>
-      <div id="nodes">Loading...</div>
-    </div>
-  </div>
-
-  <script>
-    async function api(method, path, data) {
-      try {
-        const r = await fetch(API_BASE + path, { method, headers: {'Content-Type': 'application/json'}, body: data ? JSON.stringify(data) : undefined });
-        return await r.json();
-      } catch (e) {
-        return { error: e.message };
-      }
-    }
-
-    async function updateStatus() {
-      const status = await api('GET', '/api/status');
-      document.getElementById('api-status').textContent = status.error || 'Online';
-    }
-
-    async function switchMode(mode) {
-      if (mode === 'disable') {
-        await api('POST', '/api/disable');
-      } else {
-        await api('POST', '/api/enable', { mode });
-      }
-      updateStatus();
-    }
-
-    updateStatus();
-    setInterval(updateStatus, 5000);
-  </script>
-</body>
-</html>
-'''
-
-@app.route('/')
+@app.route("/")
 def index():
-    return render_template_string(HTML_TEMPLATE)
+    return TEMPLATE
 
-@app.route('/api/<path:path>', methods=['GET', 'POST'])
-def proxy(path):
+
+@app.route("/api", methods=["POST"])
+def api():
+    """对齐 upstream netflow.lua:action_api()
+    1. 读 form 里的 'action' 字段
+    2. 从 KNOWN_KEYS 白名单读允许的字段
+    3. POST JSON 到 http://127.0.0.1:{BACKEND_PORT}/api/{action}
+    4. 透传 backend 响应
+    """
+    action = request.form.get("action", "")
+    if not action or not action.replace("_", "").isalnum():
+        return jsonify({"status": "error", "message": "invalid action"}), 400
+
+    params = {k: request.form.get(k) for k in KNOWN_KEYS if request.form.get(k)}
     try:
-        url = f'{API_BASE}/api/{path}'
-        if request.method == 'POST':
-            r = requests.post(url, json=request.json, timeout=5)
-        else:
-            r = requests.get(url, timeout=5)
-        return jsonify(r.json())
-    except Exception as e:
-        return jsonify({'error': str(e)})
+        r = requests.post(f"{API_BASE}/api/{action}", json=params, timeout=45)
+    except requests.RequestException as e:
+        return jsonify({"status": "error", "message": f"后端未响应: {e}"}), 502
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 9090)), debug=False)
+    return (r.text, r.status_code, {"Content-Type": "application/json"})
+
+
+@app.route("/upload_core", methods=["POST"])
+def upload_core():
+    """对齐 upstream netflow.lua:action_upload_core()
+    接收 multipart 'corefile' 字段,流式转发到 backend /api/core_install_upload。
+    """
+    if "corefile" not in request.files:
+        return jsonify({"status": "error", "message": "no corefile"}), 400
+
+    f = request.files["corefile"]
+    try:
+        r = requests.post(
+            f"{API_BASE}/api/core_install_upload",
+            files={"corefile": (f.filename or "core.gz", f.stream, f.mimetype or "application/octet-stream")},
+            timeout=300,
+        )
+    except requests.RequestException as e:
+        return jsonify({"status": "error", "message": f"后端未响应: {e}"}), 502
+
+    return (r.text, r.status_code, {"Content-Type": "application/json"})
+
+
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=int(os.environ.get("PORT", 9090)), debug=False)

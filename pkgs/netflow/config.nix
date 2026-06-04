@@ -9,7 +9,7 @@
   dnsPort = 7874;
   mixedPort = 9050;
   proxyMode = "global";
-  runMode = "fake-ip";
+  runMode = "redir";
   tunEnabled = false;
   lanProxy = false;
   ipv6Proxy = false;

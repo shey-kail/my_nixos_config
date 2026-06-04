@@ -26,14 +26,16 @@ stdenv.mkDerivation rec {
 
   buildPhase = ''
     runHook preBuild
-    # 从内层 data.tar.gz 提取 x86_64 二进制
-    tar -xzf data.tar.gz ./usr/bin/netflow_x86_64
+    # 全部解包(不只是 netflow 二进制,还要给 ui-module 提供 LuCI view)
+    tar -xzf data.tar.gz
     runHook postBuild
   '';
 
   installPhase = ''
     runHook preInstall
     install -Dm755 usr/bin/netflow_x86_64 $out/bin/netflow
+    # 导出 upstream LuCI view 给 ui-module.nix 用,避免在 git 仓库存 verbatim 1991 行
+    install -Dm644 usr/lib/lua/luci/view/netflow/main.htm $out/share/netflow/main.htm
     runHook postInstall
   '';
 
