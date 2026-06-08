@@ -70,5 +70,11 @@
       url = "git+ssh://git@codeberg.org/sheykail/mysecrets.git";
       flake = false;
     };
+
+    # DankMaterialShell plugin registry(阶段 3 装插件时再加,需要配镜像:GitHub 直连超时)
+    # dms-plugin-registry = {
+    #   url = "github:AvengeMedia/dms-plugin-registry";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
   };
 }
