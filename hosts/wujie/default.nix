@@ -17,11 +17,9 @@ in
     networkmanager.enable = true;
   };
 
-  # 启用四件套代理(singbox/singbox-backup/netflow 三者互斥,dae 依赖任一)
+  # 启用三件套代理(singbox/singbox-backup 互斥,dae 依赖任一)
   # singbox / singbox-backup 在 modules/nixos/base/singbox/singbox.nix 里硬编码 wantedBy=multi-user.target
   services.dae.enable = true;
-  services.netflow.enable = true;
-  services.netflow-ui.enable = true;
 
   # conflict with feature: containerd-snapshotter
   # virtualisation.docker.storageDriver = "btrfs";
