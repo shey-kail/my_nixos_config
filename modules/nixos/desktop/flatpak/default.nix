@@ -29,7 +29,6 @@
       };
     };
     packages = [
-      "app.zen_browser.zen"
       "com.brave.Browser"
       "com.tencent.wemeet"
       "com.valvesoftware.Steam"

@@ -35,7 +35,7 @@
       # let `xdg-open` to open the url with the correct application.
       defaultApplications =
         let
-          browser = [ "app.zen_browser.zen" ];
+          browser = [ "com.brave.Browser" ];
           editor = [ "nvim.desktop" ];
           # 定义 WPS 三大件对应的桌面文件
           wps = [ "cn.wps.wps_365.wps.desktop" ];
