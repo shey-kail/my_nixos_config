@@ -35,6 +35,8 @@
       "libvirtd"
       "podman"
       "fuse"
+      # DMS / quickshell 需要读 evdev 输入设备(键盘/鼠标/触摸板)
+      "input"
     ];
   };
 

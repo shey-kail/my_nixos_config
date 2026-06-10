@@ -38,12 +38,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    plasma-manager = {
-      url = "github:nix-community/plasma-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
-    };
-
     nix-gaming.url = "github:fufexan/nix-gaming";
 
     # add git hooks to format nix code before commit
@@ -71,10 +65,10 @@
       flake = false;
     };
 
-    # DankMaterialShell plugin registry(阶段 3 装插件时再加,需要配镜像:GitHub 直连超时)
-    # dms-plugin-registry = {
-    #   url = "github:AvengeMedia/dms-plugin-registry";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
+    # DankMaterialShell 插件注册表
+    dms-plugin-registry = {
+      url = "github:AvengeMedia/dms-plugin-registry";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 }

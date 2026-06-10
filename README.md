@@ -34,7 +34,7 @@ flake.nix
 |---|---|
 | `nixpkgs` | `nixos-unstable` 分支 |
 | `home-manager` | 用户级配置(`nixpkgs` 跟随主 flake) |
-| `plasma-manager` | KDE Plasma 6 配置(`nixpkgs` + `home-manager` 跟随) |
+| `dms-plugin-registry` | DankMaterialShell 插件注册表 |
 | `nix-flatpak` | Flatpak 服务模块 |
 | `nur` | NUR overlay |
 | `nix-gaming` | 游戏相关 overlay |
@@ -142,9 +142,7 @@ scanPaths = path:
 
 | 包 | 用途 |
 |---|---|
-| `krohnkite` | KDE 动态平铺脚本扩展 |
 | `subpipe` | 订阅转换器 |
-| `netflow/` | 青云梯客户端(见第六节) |
 
 扫描机制 `lib/scanPkgs.nix` 同时支持:
 - `pkgs/<name>.nix`(扁平,文件名作 attr 名)
@@ -189,7 +187,6 @@ overlays/overlay/all-packages.nix (再扫一遍 pkgs/ 走 callPackage)
 `home/linux/gui.nix` 聚合:
 - `home/base/{core, tui, gui, home.nix}`(跨平台)
 - `home/linux/{base, gui}`(Linux 专用)
-- `home/linux/gui/base/plasma6`(KDE Plasma 6,plasma-manager 接管)
 - `home/linux/gui/base/fcitx5`(桌面输入法)
 - `home/linux/gui/base/sunshine`(Sunshine 客户端,目前注释)
 - `home/linux/gui/base/xdg.nix`(MIME 默认应用)

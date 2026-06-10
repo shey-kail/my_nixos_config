@@ -38,7 +38,7 @@ nix eval .#evalTests --show-trace --print-build-logs --verbose
 flake 入口链: `flake.nix` → `outputs/default.nix` → `outputs/<arch>/default.nix` → `outputs/<arch>/src/<host>.nix`
 
 ```
-flake.nix                # 声明 inputs(nixpkgs/unstable、home-manager、plasma-manager、agenix、mysecrets 等)
+flake.nix                # 声明 inputs(nixpkgs/unstable、home-manager、agenix、dms-plugin-registry、mysecrets 等)
 outputs/
   default.nix            # 组装所有系统输出:packages / checks / devShells / formatter
   x86_64-linux/
@@ -65,7 +65,7 @@ home/
   base/                  # 跨平台(core、tui、gui、shells、editors)
   linux/                 # Linux 专用
 lib/                     # 工具函数:nixosSystem、scanPaths(自动扫描目录下的 .nix 与子目录)、attrs
-pkgs/                    # 自定义包:netflow(青云梯客户端)、subpipe(订阅转换器)、krohnkite(KDE 动态平铺)
+pkgs/                    # 自定义包:subpipe(订阅转换器)
 overlays/                # nixpkgs 覆盖:自动扫描 ./overlay 下所有 .nix
 vars/default.nix         # username、userfullname、useremail、initialHashedPassword
 secrets/nixos.nix        # agenix secret 定义(指向 mysecrets 输入中的 .age 文件)
@@ -97,7 +97,7 @@ secrets/nixos.nix        # agenix secret 定义(指向 mysecrets 输入中的 .a
 | 主机名 / 网络 / systemd-boot | `hosts/wujie/default.nix`、`modules/nixos/base/core.nix` |
 | 系统包 | `modules/nixos/base/packages.nix`、`modules/nixos/desktop/packages.nix` |
 | 用户 / shell / 终端 | `home/linux/`、`home/base/core/`、`home/base/tui/` |
-| KDE Plasma 配置 | `modules/nixos/desktop/kde/`、`plasma-manager` 输入 |
+| Hyprland + DMS 配置 | `modules/nixos/desktop/hyprland/`、`modules/nixos/desktop/dms/`(用 nixpkgs `programs.hyprland` / `programs.dms-shell`) |
 | 代理订阅 / sing-box | `modules/nixos/base/singbox/singbox.nix` + `singbox-templates/` |
 | dae 流量规则 | `modules/nixos/base/dae/dae.nix` + `dae/config.dae` |
 | netflow 客户端 | `modules/nixos/base/netflow/default.nix` + `pkgs/netflow.nix` |
