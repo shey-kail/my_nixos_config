@@ -1,4 +1,5 @@
-{pkgs, overlays, ...}: {
+{ pkgs, overlays, ... }:
+{
   # Apply NUR overlay
   nixpkgs.overlays = overlays;
 
@@ -21,7 +22,6 @@
     parted
 
     # backup
-    bup
     rclone
 
     # aircrack-ng
