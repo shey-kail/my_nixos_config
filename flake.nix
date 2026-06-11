@@ -70,5 +70,12 @@
       url = "github:AvengeMedia/dms-plugin-registry";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Windows 11 字体(Arial/Calibri/Segoe UI/Times New Roman/微软雅黑/宋体/仿宋/楷体/黑体 等)
+    # 微软 EULA:仅在拥有 Win11 合法授权时使用。
+    # 注:不要 follows nixpkgs(httpdirfs 在 stable channel 坏掉,见 README)
+    nix-ttf-ms-win11-auto = {
+      url = "github:kugland/nix-ttf-ms-win11-auto";
+    };
   };
 }
