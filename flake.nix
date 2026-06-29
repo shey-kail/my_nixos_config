@@ -77,5 +77,13 @@
     nix-ttf-ms-win11-auto = {
       url = "github:kugland/nix-ttf-ms-win11-auto";
     };
+
+    # Hermes Agent — Nous Research 的 AI agent gateway。
+    # 用 native systemd 模式(不开 container.enable),agent 不能运行时改包;
+    # 新 Python 库走 pixi / nix-shell 自管,CLI 工具走 extraPackages。
+    hermes-agent = {
+      url = "github:NousResearch/hermes-agent";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 }
