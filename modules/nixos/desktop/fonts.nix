@@ -18,18 +18,13 @@
 
       # nerdfonts:图标 + 等宽,terminal/IDE 必备
       # https://github.com/NixOS/nixpkgs/blob/nixos-unstable-small/pkgs/data/fonts/nerd-fonts/manifests/fonts.json
-      nerd-fonts.symbols-only # symbols icon only
-      nerd-fonts.fira-code
-      nerd-fonts.jetbrains-mono
-      nerd-fonts.iosevka
-
-      # kmscon 终端用
-      source-code-pro
+      nerd-fonts.symbols-only # symbols icon only(CLI status icon)
+      nerd-fonts.hack # 主等宽(kmscon/alacritty/GTK fallback)
 
       # Windows 11 字体(来自 nix-ttf-ms-win11-auto,微软 EULA,需合法 Win11 license)
       # 放最后,优先级最高,覆盖任何 alias 冲突的 fontconfig fallback
-      ttf-ms-win11-auto         # 英文:Arial/Calibri/Segoe UI/Times New Roman/Cambria/Tahoma 等
-      ttf-ms-win11-auto-zh_cn   # 简体中文:Microsoft YaHei(微软雅黑)/SimSun(宋体)
+      ttf-ms-win11-auto # 英文:Arial/Calibri/Segoe UI/Times New Roman/Cambria/Tahoma 等
+      ttf-ms-win11-auto-zh_cn # 简体中文:Microsoft YaHei(微软雅黑)/SimSun(宋体)
       ttf-ms-win11-fod-auto-hans # 简体中文 FOD:FangSong(仿宋)/KaiTi(楷体)/SimHei(黑体)/DengXian(等线)
     ];
 
@@ -53,9 +48,9 @@
     enable = true;
     extraOptions = "--term xterm-256color";
     config = {
-      # 字体名走 fontconfig,source-code-pro 已加进 fonts.packages
-      font-name = "Source Code Pro";
-      font-size = 12;
+      # 字体名走 fontconfig,nerd-fonts.hack 已加进 fonts.packages
+      # font-size 在 hosts/wujie/default.nix 按本机分辨率覆盖(2K / 2560×1440)
+      font-name = "Hack Nerd Font";
       # Whether to use 3D hardware acceleration to render the console.
       hwaccel = true;
     };
