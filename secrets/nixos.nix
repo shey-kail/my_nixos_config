@@ -106,6 +106,18 @@ in
           file = "${mysecrets}/singbox/subscriptions_backup.age";
         }
         // high_security;
+
+        # hermes-agent API key (env-style: 'OPENROUTER_API_KEY=sk-or-...')
+        # services.hermes-agent.environmentFiles = [ "/etc/hermes/env" ] reads it.
+        # mode 0600 owner=root (hermes-agent.service runs as hermes user, gets
+        # it via the activation script's merge into $HERMES_HOME/.env).
+        # Create with: cd ~/codeberg/mysecrets && agenix rekey
+        "hermes_env" = {
+          file = "${mysecrets}/hermes/env.age";
+          path = "/etc/hermes/env";
+          symlink = false;
+        }
+        // high_security;
       };
 
       # place secrets in /etc/
