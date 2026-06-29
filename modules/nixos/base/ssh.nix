@@ -6,6 +6,10 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   networking.firewall.enable = lib.mkDefault true;
+  # SSH only reachable from tailnet — drop the public-internet exposure that
+  # `services.openssh.openFirewall = true` would create. Tailscale's
+  # `interfaceName = "tailscale0"` is set in hosts/wujie/remote-desktop/tailscale.nix.
+  networking.firewall.trustedInterfaces = ["tailscale0"];
 
   # Enable the OpenSSH daemon.
   services.openssh = {
@@ -16,7 +20,7 @@
       PermitRootLogin = "prohibit-password";
       PasswordAuthentication = false; # disable password login
     };
-    openFirewall = true;
+    openFirewall = false;
   };
 
   # Add terminfo database of all known terminals to the system profile.
