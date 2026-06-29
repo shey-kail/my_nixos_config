@@ -40,19 +40,22 @@
 
   # ============================================================
   # 登录管理器: greetd + tuigreet (TUI 轻量)
-  # greetd exec `uwsm start -- hyprland`(不是直接 start-hyprland),让 systemd 接管 hyprland。
-  # --cmd 后整段命令要用引号包起来,否则 --cmd 只 consume 下一个 token。
+  # 不在 tuigreet 里写死 --cmd,登录后让 tuigreet 弹命令输入框,
+  # 用户在 greetd 提示里手动输入要 exec 的命令(默认填 `uwsm start -- hyprland`)。
+  # --remember-session 记住上次选 session,下次默认选中。
+  # --time-format 用 chrono strftime 子集;%a 始终英文(chrono 默认 POSIX locale),
+  # 不会被系统 LC_TIME=zh_CN 影响。
+  # --sessions 显式指定只扫 system-path 下的 wayland-sessions/,避免 nixpkgs 的
+  # pkgs.desktops 聚合(-desktops symlink farm)和 system-path 暴露同一份 hyprland .desktop
+  # 导致 tuigreet 显示 4 条(它不去重)。XDG_DATA_DIRS 在 systemd unit 上设会被 PAM
+  # startSession 重置,所以走 CLI 参数。
   # ============================================================
   services.greetd = {
     enable = true;
     useTextGreeter = true;
     settings = {
       default_session = {
-        # --cmd 后面要用引号把整个命令包起来:tuigreet 的 --cmd 跟大部分 CLI 一样,
-        # 只 consume 下一个 token。裸写 `uwsm start -- hyprland` 会被切成三段,
-        # --cmd 只拿到 `uwsm`,后面 `start -- hyprland` 变成 tuigreet 的位置参数,被丢弃。
-        # 用 \"...\" 把整段当成 --cmd 的 value,login 后 shell exec 一整段。
-        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --asterisks --cmd \"uwsm start -- hyprland\"";
+        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --time-format '%Y-%m-%d %a %H:%M' --asterisks --remember-session --sessions /run/current-system/sw/share/wayland-sessions";
         user = "greeter";
       };
     };
