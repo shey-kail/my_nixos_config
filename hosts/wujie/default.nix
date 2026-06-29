@@ -21,6 +21,10 @@ in
   # singbox / singbox-backup 在 modules/nixos/base/singbox/singbox.nix 里硬编码 wantedBy=multi-user.target
   services.dae.enable = true;
 
+  # kmscon 字体大小按本机分辨率调(wujie:2K / 2560×1440)。
+  # 改这个值不需要动 modules/nixos/desktop/fonts.nix。
+  services.kmscon.config.font-size = 24;
+
   # conflict with feature: containerd-snapshotter
   # virtualisation.docker.storageDriver = "btrfs";
 
