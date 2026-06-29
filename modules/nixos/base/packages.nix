@@ -24,8 +24,8 @@
     # backup
     rclone
 
-    # aircrack-ng
-    aircrack-ng
+    # aircrack-ng: 不进系统包,需要时 `nix shell nixpkgs#aircrack-ng` 临时跑。
+    # 放系统包会降低 wifi 攻击门槛,不必要。
 
     #vainfo
     libva-utils.out
