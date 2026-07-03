@@ -2,22 +2,23 @@
   myvars,
   config,
   ...
-}: {
+}:
+{
   # Don't allow mutation of users outside the config.
   users.mutableUsers = false;
 
   users.groups = {
-    "${myvars.username}" = {};
+    "${myvars.username}" = { };
     # for android platform tools's udev rules
-    adbusers = {};
-    dialout = {};
+    adbusers = { };
+    dialout = { };
     # for openocd (embedded system development)
-    plugdev = {};
+    plugdev = { };
     # misc
-    uinput = {};
-    podman = {};
-    fuse = {};
-    libvirtd = {};
+    uinput = { };
+    podman = { };
+    fuse = { };
+    libvirtd = { };
   };
 
   users.users."${myvars.username}" = {

@@ -25,6 +25,8 @@
     "kvm-amd"
   ];
 
+  users.extraGroups.vboxusers.members = [ "shey" ];
+
   # virtualisation = {
   # Usage: https://wiki.nixos.org/wiki/Waydroid
   # waydroid.enable = true;
@@ -47,13 +49,19 @@
       # Required for containers under podman-compose to be able to talk to each other.
       defaultNetwork.settings.dns_enabled = true;
     };
-    virtualbox.host = {
-      enable = true;
-      enableKvm = true;
-      addNetworkInterface = false;
+    virtualbox = {
+      host = {
+        enable = true;
+        enableKvm = true;
+        addNetworkInterface = false;
+        enableExtensionPack = true;
+      };
+      guest = {
+        enable = true;
+        dragAndDrop = true;
+      };
     };
   };
-
   # environment.systemPackages = with pkgs; [
   # This script is used to install the arm translation layer for waydroid
   # so that we can install arm apks on x86_64 waydroid
