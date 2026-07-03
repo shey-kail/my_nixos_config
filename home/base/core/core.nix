@@ -1,7 +1,4 @@
-{
-  pkgs,
-  ...
-}: {
+{pkgs, ...}: {
   home.packages = with pkgs; [
     # Misc
     gnupg
@@ -11,6 +8,9 @@
     fzf
     # search for files by name, faster than find
     fd
+    ripgrep # grep 替代,shey 日常 + 后续 agent 都用得上
+    jq # JSON 处理
+    gh # GitHub CLI
 
     csvtk
 
