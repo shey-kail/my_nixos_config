@@ -1,27 +1,25 @@
 {
   pkgs,
-  lib,
   ...
-}: let
-  sharedCli = import ../../../vars/shared-cli.nix {inherit pkgs;};
-in {
-  # shey 用户的 home 专用包。CLI 工具走 vars/shared-cli.nix 共享(hermes 同步可用)。
-  home.packages =
-    sharedCli
-    ++ (with pkgs; [
-      # Misc
-      gnupg
-      gnumake
+}: {
+  home.packages = with pkgs; [
+    # Misc
+    gnupg
+    gnumake
 
-      csvtk
+    # Interactively filter its input using fuzzy searching, not limit to filenames.
+    fzf
+    # search for files by name, faster than find
+    fd
 
-      lazygit # Git terminal UI.
-      gping # ping, but with a graph(TUI)
-      resvg # preview svg, required by yazi
-      wl-clipboard # clipboard, required by yazi
-      zoxide #for historical directories navigation, requires fzf, required by yazi
-      ueberzugpp # image previewer for terminal file managers (yazi 用)
-    ]);
+    csvtk
+
+    lazygit # Git terminal UI.
+    gping # ping, but with a graph(TUI)
+    resvg # preview svg, required by yazi
+    wl-clipboard # clipboard, required by yazi
+    zoxide #for historical directories navigation, requires fzf, required by yazi
+  ];
 
   programs = {
     # A command-line fuzzy finder
