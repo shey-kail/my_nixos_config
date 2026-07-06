@@ -39,27 +39,9 @@
   };
 
   # ============================================================
-  # 登录管理器: greetd + tuigreet (TUI 轻量)
-  # 不在 tuigreet 里写死 --cmd,登录后让 tuigreet 弹命令输入框,
-  # 用户在 greetd 提示里手动输入要 exec 的命令(默认填 `uwsm start -- hyprland`)。
-  # --remember-session 记住上次选 session,下次默认选中。
-  # --time-format 用 chrono strftime 子集;%a 始终英文(chrono 默认 POSIX locale),
-  # 不会被系统 LC_TIME=zh_CN 影响。
-  # --sessions 显式指定只扫 system-path 下的 wayland-sessions/,避免 nixpkgs 的
-  # pkgs.desktops 聚合(-desktops symlink farm)和 system-path 暴露同一份 hyprland .desktop
-  # 导致 tuigreet 显示 4 条(它不去重)。XDG_DATA_DIRS 在 systemd unit 上设会被 PAM
-  # startSession 重置,所以走 CLI 参数。
+  # 登录管理器: dms-greeter (轻量)
   # ============================================================
-  services.greetd = {
-    enable = true;
-    useTextGreeter = true;
-    settings = {
-      default_session = {
-        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --time-format '%Y-%m-%d %a %H:%M' --asterisks --remember-session --sessions /run/current-system/sw/share/wayland-sessions";
-        user = "greeter";
-      };
-    };
-  };
+  services.displayManager.dms-greeter.enable = true;
 
   # ============================================================
   # KDE Connect — 纯用户态 daemon,不依赖 plasma6
