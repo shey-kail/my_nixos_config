@@ -42,6 +42,7 @@
   # 登录管理器: dms-greeter (轻量)
   # ============================================================
   services.displayManager.dms-greeter.enable = true;
+  services.displayManager.dms-greeter.compositor.name = "hyprland";
 
   # ============================================================
   # KDE Connect — 纯用户态 daemon,不依赖 plasma6
