@@ -10,12 +10,6 @@
     # "davfs"
     "sshfs"
   ];
-  
-  
-  # Ensure the datapool directory exists with proper permissions
-  systemd.tmpfiles.rules = [
-    "d /datapool/home/2023200498 0777 root users - -"
-  ];
 
   # mount a smb/cifs share
   # fileSystems."/home/${myvars.username}/SMB-Downloads" = {
@@ -43,29 +37,4 @@
   # # davfs2 reads its credentials from /etc/davfs2/secrets
   # environment.etc."davfs2/secrets".source = ./dotfiles/davfs2/secrets;
 
-#  # sshfs
-#  fileSystems."/datapool/home/2023200498" = {
-#    device = "2023200498@10.68.162.201:/datapool/home/2023200498";
-#    fsType = "sshfs";
-#    options = [
-#      "nodev"
-#      "noatime"
-#      "allow_other"
-#      "idmap=user"
-#      "_netdev"
-#      "x-systemd.automount"
-#      "x-systemd.idle-timeout=600"
-#      "port=22"
-#      "IdentityFile=/home/${myvars.username}/.ssh/id_rsa"
-#    ];
-#  };
-#  
-#  services.openssh.knownHosts = {
-#    ds920 = {
-#      hostNames = [
-#        "ds920.local"
-#      ];
-#      publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHLn9ETNjjj49yGV+0xTmbD4oWYXXGWYn96Kn9ZT0lAC";
-#    };
-#  };
 }
