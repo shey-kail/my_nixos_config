@@ -14,6 +14,10 @@
 
     # video player
     mpv
+
+    # picture shower
+    imv
+
     # remote desktop
     rustdesk-flutter
 
@@ -26,10 +30,26 @@
 
     alacritty
 
-    # file manager(轻量,Qt,LXQt 维护中;走 KIO / gvfs 协议,wayland 原生)
-    pcmanfm-qt
-
     # icon theme(Qogir,扁平化多色,GTK/Qt 应用图标)
     qogir-icon-theme
   ];
+
+  services = {
+    gvfs.enable = true; # Mount, trash, and other functionalities
+    tumbler.enable = true; # Thumbnail support for images
+  };
+
+  programs = {
+    # dconf is a low-level configuration system.
+    dconf.enable = true;
+
+    # thunar file manager(part of xfce) related options
+    thunar = {
+      enable = true;
+      plugins = with pkgs; [
+        thunar-archive-plugin
+        thunar-volman
+      ];
+    };
+  };
 }
