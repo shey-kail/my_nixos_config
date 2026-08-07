@@ -25,21 +25,29 @@
     "kvm-amd"
   ];
 
-  users.extraGroups.vboxusers.members = [ "shey" ];
+  users.extraGroups.libvirtd.members = [ "shey" ];
 
-  # virtualisation = {
-  # Usage: https://wiki.nixos.org/wiki/Waydroid
-  # waydroid.enable = true;
+  virtualisation = {
+    # Usage: https://wiki.nixos.org/wiki/Waydroid
+    # waydroid.enable = true;
 
-  # libvirtd = {
-  #   enable = true;
-  #   # hanging this option to false may cause file permission issues for existing guests.
-  #   # To fix these, manually change ownership of affected files in /var/lib/libvirt/qemu to qemu-libvirtd.
-  #   qemu.runAsRoot = true;
-  # };
+    libvirtd = {
+      enable = true;
+      # hanging this option to false may cause file permission issues for existing guests.
+      # To fix these, manually change ownership of affected files in /var/lib/libvirt/qemu to qemu-libvirtd.
+      qemu.runAsRoot = true;
+      qemu.vhostUserPackages = with pkgs; [ virtiofsd ];
+    };
+    spiceUSBRedirection.enable = true;
 
-  # lxd.enable = true;
-  # };
+    # lxd.enable = true;
+  };
+  # To enable UEFI firmware support in Virt-Manager, Libvirt, Gnome-Boxes etc. add following snippet to your system configuration and apply it
+  systemd.tmpfiles.rules = [ "L+ /var/lib/qemu/firmware - - - - ${pkgs.qemu}/share/qemu/firmware" ];
+
+  # can be used to manage non-local hosts as well
+  programs.virt-manager.enable = true;
+
   virtualisation.containers.enable = true;
   virtualisation = {
     podman = {
@@ -49,43 +57,32 @@
       # Required for containers under podman-compose to be able to talk to each other.
       defaultNetwork.settings.dns_enabled = true;
     };
-    virtualbox = {
-      host = {
-        enable = true;
-        enableKvm = true;
-        addNetworkInterface = false;
-        enableExtensionPack = true;
-      };
-      guest = {
-        enable = true;
-        dragAndDrop = true;
-      };
-    };
   };
-  # environment.systemPackages = with pkgs; [
-  # This script is used to install the arm translation layer for waydroid
-  # so that we can install arm apks on x86_64 waydroid
-  #
-  # https://github.com/casualsnek/waydroid_script
-  # https://wiki.archlinux.org/title/Waydroid#ARM_Apps_Incompatible
 
-  # Need to add [File (in the menu bar) -> Add connection] when start for the first time
-  # virt-manager
+  environment.systemPackages = with pkgs; [
+    # This script is used to install the arm translation layer for waydroid
+    # so that we can install arm apks on x86_64 waydroid
+    #
+    # https://github.com/casualsnek/waydroid_script
+    # https://wiki.archlinux.org/title/Waydroid#ARM_Apps_Incompatible
 
-  # QEMU/KVM(HostCpuOnly), provides:
-  #   qemu-storage-daemon qemu-edid qemu-ga
-  #   qemu-pr-helper qemu-nbd elf2dmp qemu-img qemu-io
-  #   qemu-kvm qemu-system-x86_64 qemu-system-aarch64 qemu-system-i386
-  # qemu_kvm
+    # Need to add [File (in the menu bar) -> Add connection] when start for the first time
+    virt-manager
 
-  # Install QEMU(other architectures), provides:
-  #   ......
-  #   qemu-loongarch64 qemu-system-loongarch64
-  #   qemu-riscv64 qemu-system-riscv64 qemu-riscv32  qemu-system-riscv32
-  #   qemu-system-arm qemu-arm qemu-armeb qemu-system-aarch64 qemu-aarch64 qemu-aarch64_be
-  #   qemu-system-xtensa qemu-xtensa qemu-system-xtensaeb qemu-xtensaeb
-  #   ......
-  # qemu
+    # QEMU/KVM(HostCpuOnly), provides:
+    #   qemu-storage-daemon qemu-edid qemu-ga
+    #   qemu-pr-helper qemu-nbd elf2dmp qemu-img qemu-io
+    #   qemu-kvm qemu-system-x86_64 qemu-system-aarch64 qemu-system-i386
+    qemu_kvm
 
-  #  ];
+    # Install QEMU(other architectures), provides:
+    #   ......
+    #   qemu-loongarch64 qemu-system-loongarch64
+    #   qemu-riscv64 qemu-system-riscv64 qemu-riscv32  qemu-system-riscv32
+    #   qemu-system-arm qemu-arm qemu-armeb qemu-system-aarch64 qemu-aarch64 qemu-aarch64_be
+    #   qemu-system-xtensa qemu-xtensa qemu-system-xtensaeb qemu-xtensaeb
+    #   ......
+    qemu
+
+  ];
 }
