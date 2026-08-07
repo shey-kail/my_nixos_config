@@ -48,6 +48,23 @@
   # can be used to manage non-local hosts as well
   programs.virt-manager.enable = true;
 
+  # 开机自动启动 libvirt 的 default NAT 网络(libvirtd 起来后执行)。
+  # net-autostart 幂等持久化 autostart;net-start 确保当前已运行(已运行则报错,忽略)。
+  systemd.services.libvirt-net-default = {
+    description = "Start libvirt default network";
+    after = [ "libvirtd.service" ];
+    wants = [ "libvirtd.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      ${pkgs.libvirt}/bin/virsh net-autostart default || true
+      ${pkgs.libvirt}/bin/virsh net-start default || true
+    '';
+  };
+
   virtualisation.containers.enable = true;
   virtualisation = {
     podman = {
