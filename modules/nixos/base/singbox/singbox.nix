@@ -67,6 +67,7 @@ in
   };
 
   # 定时器配置（每12小时自动更新）
+  # 默认不启用。需要自动更新时 `sudo systemctl start singbox-sub-update.timer`。
   systemd.timers.singbox-sub-update = {
     description = "Timer for singbox subscription update";
     timerConfig = {
@@ -74,15 +75,15 @@ in
       OnUnitActiveSec = "12h";
       Unit = "singbox-sub-update.service";
     };
-    wantedBy = [ "timers.target" ];
   };
 
   # ============================================
   # 2. singbox 主服务
   # ============================================
+  # 默认不启动(去掉 wantedBy)。手动 `sudo systemctl start singbox`。
+  # partOf=dae.service:dae 启动时 singbox 会自动跟随启动/停止。
   systemd.services.singbox = {
     description = "singbox service (main subscription)";
-    wantedBy = [ "multi-user.target" ];
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
     conflicts = [ "singbox-backup.service" ];
@@ -125,9 +126,10 @@ in
   # ============================================
   # 3. singbox 备用服务
   # ============================================
+  # 默认不启动(去掉 wantedBy)。手动 `sudo systemctl start singbox-backup`。
+  # partOf=dae.service:dae 启动时 singbox-backup 会自动跟随启动/停止。
   systemd.services.singbox-backup = {
     description = "singbox service (backup subscription)";
-    wantedBy = [ "multi-user.target" ];
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
     conflicts = [ "singbox.service" ];
