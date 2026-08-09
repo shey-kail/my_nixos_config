@@ -44,7 +44,8 @@
         in
         {
           "application/json" = browser;
-          "application/pdf" = [ "org.kde.okular.desktop" ];
+          # PDF 用 zathura(替代 okular)
+          "application/pdf" = [ "org.pwmt.zathura.desktop" ];
 
           "text/html" = browser;
           "text/xml" = browser;

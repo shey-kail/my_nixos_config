@@ -16,27 +16,9 @@
         sort_dir_first = true;
         linemode = "size";
       };
-      # PDF 用 zathura 打开。
-      # yazi 的 opener 是 map(键=opener名),每个值是该 opener 的候选数组(fallback 链)。
-      # 注意:opener 顶层是 map,不是数组;opener 值才是数组。
-      opener = {
-        zathura = [
-          {
-            run = "zathura \"$@\"";
-            desc = "Open PDF with Zathura";
-            block = false;
-          }
-        ];
-      };
-      open = {
-        rules = [
-          # yazi 的 open 规则用 mime(glob)或 url(正则)匹配,不支持 name
-          {
-            mime = "application/pdf";
-            use = [ "zathura" ];
-          }
-        ];
-      };
     };
   };
+  # 注意:不要在这里自定义 yazi 的 open.rules / opener 来改 PDF 打开方式——
+  # 自定义 open.rules 会替换 yazi 内置规则,jpg/mp4 等会失去默认打开方式。
+  # PDF 默认应用(zathura)统一在 home/linux/gui/base/xdg.nix 的 mimeApps 里管理。
 }
