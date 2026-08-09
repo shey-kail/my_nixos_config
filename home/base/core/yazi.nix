@@ -15,6 +15,19 @@
         sort_dir_first = true;
         linemode = "size";
       };
+      # PDF 用 zathura 打开
+      opener = {
+        zathura = {
+          run = "zathura \"$@\"";
+          desc = "Open PDF with Zathura";
+          block = false;
+        };
+      };
+      open = {
+        rules = [
+          { name = "*.pdf"; use = [ "zathura" ]; }
+        ];
+      };
     };
   };
 }

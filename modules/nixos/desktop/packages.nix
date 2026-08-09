@@ -18,6 +18,9 @@
     # picture shower
     imv
 
+    # pdf viewer
+    zathura
+
     # remote desktop
     rustdesk-flutter
 
