@@ -25,7 +25,8 @@
       };
       open = {
         rules = [
-          { name = "*.pdf"; use = [ "zathura" ]; }
+          # yazi 的 open 规则用 mime(glob)或 url(正则)匹配,不支持 name
+          { mime = "application/pdf"; use = [ "zathura" ]; }
         ];
       };
     };
