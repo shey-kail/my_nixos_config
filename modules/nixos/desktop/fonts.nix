@@ -9,6 +9,16 @@
     fontconfig.enable = true;
 
     packages = with pkgs; [
+      ### 方正字体
+      # 方正个人免费字库(含商用免费字体)
+      foundertype-gpu-fonts
+
+      # 华为字体(HarmonyOS Sans 全系列)
+      harmonyos-sans-fonts
+
+      # 微软字体(Windows 11 zh-CN ISO 全量)
+      windows-fonts
+
       # Noto 系列字体(Google 主导),只装彩色 emoji,思源已经覆盖 CJK
       noto-fonts-color-emoji # 彩色的表情符号字体
 
@@ -18,23 +28,27 @@
 
       # nerdfonts:图标 + 等宽,terminal/IDE 必备
       # https://github.com/NixOS/nixpkgs/blob/nixos-unstable-small/pkgs/data/fonts/nerd-fonts/manifests/fonts.json
-      nerd-fonts.symbols-only # symbols icon only(CLI status icon)
       nerd-fonts.hack # 主等宽(kmscon/alacritty/GTK fallback)
-
-      # Windows 11 字体(来自 nix-ttf-ms-win11-auto,微软 EULA,需合法 Win11 license)
-      # 放最后,优先级最高,覆盖任何 alias 冲突的 fontconfig fallback
-      ttf-ms-win11-auto # 英文:Arial/Calibri/Segoe UI/Times New Roman/Cambria/Tahoma 等
-      ttf-ms-win11-auto-zh_cn # 简体中文:Microsoft YaHei(微软雅黑)/SimSun(宋体)
-      ttf-ms-win11-fod-auto-hans # 简体中文 FOD:FangSong(仿宋)/KaiTi(楷体)/SimHei(黑体)/DengXian(等线)
     ];
 
     # user defined fonts
     # the reason there's Noto Color Emoji everywhere is to override DejaVu's
     # B&W emojis that would sometimes show instead of some Color emojis
     fontconfig.defaultFonts = {
-      serif = ["Source Han Serif SC" "Source Han Serif TC" "Noto Color Emoji"];
-      sansSerif = ["Source Han Sans SC" "Source Han Sans TC" "Noto Color Emoji"];
-      monospace = ["JetBrainsMono Nerd Font" "Noto Color Emoji"];
+      serif = [
+        "Source Han Serif SC"
+        "Source Han Serif TC"
+        "Noto Color Emoji"
+      ];
+      sansSerif = [
+        "Source Han Sans SC"
+        "Source Han Sans TC"
+        "Noto Color Emoji"
+      ];
+      monospace = [
+        "JetBrainsMono Nerd Font"
+        "Noto Color Emoji"
+      ];
       emoji = ["Noto Color Emoji"];
     };
   };
