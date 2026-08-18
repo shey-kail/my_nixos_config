@@ -36,7 +36,6 @@
       "com.qq.QQ"
       "com.tencent.WeChat"
       "md.obsidian.Obsidian"
-      "cn.wps.wps_365"
     ];
   };
 }
