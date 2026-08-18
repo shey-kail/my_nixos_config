@@ -10,10 +10,9 @@
 
     scrcpy
 
-    pkgs.nur.repos.lonerOrz.gemini-cli-bin
-    pkgs.nur.repos.lonerOrz.qwen-code-bin
-    claude-code
-    # antigravity
+    pkgs.nur.repos.zerozawa.deepseek-harness
+    codex
+    officecli
 
     gimp
 
