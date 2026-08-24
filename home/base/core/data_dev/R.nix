@@ -23,42 +23,6 @@ let
       future_apply
       multidplyr
 
-      ### GO analysis
-      clusterProfiler
-      AnnotationHub
-      AnnotationHubData
-
-      ### plot
-      cowplot
-      ggtree
-      ggfun
-      ggprism
-      ggpubr
-      ggsci
-      ggsignif
-      ggedit
-      ggupset
-      ggVennDiagram
-      ggrepel
-      ggsankeyfier
-
-      tidyplots
-
-      patchwork
-      httpgd
-      fanyi
-      yulab_utils
-      RIdeogram
-      CMplot
-
-      ### DEGS
-      DESeq2
-      edgeR
-
-      # SingleCell
-      SingleCellExperiment
-      Seurat
-
       # utils
       optparse
     ];
