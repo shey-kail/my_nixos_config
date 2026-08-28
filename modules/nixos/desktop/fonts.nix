@@ -1,5 +1,14 @@
-{pkgs, ...}: {
-  # all fonts are linked to /nix/var/nix/profiles/system/sw/share/X11/fonts
+{
+  lib,
+  pkgs,
+  ...
+}:
+{
+  # 注意:不启用 fontDir(不生成 /run/current-system/sw/share/X11/fonts)。
+  # nixpkgs 的 flatpak 补丁 fix-fonts-icons.patch 会在该目录存在时,
+  # 把宿主办字体 + 相关 /nix/store 路径暴露给**所有** flatpak 应用。
+  # 关掉它后,flatpak 应用不再自动看到宿主字体(/nix/store 也随之不暴露);
+  # 需要字体的应用(如 flatpak WPS)改为按需开放:见 home/linux/gui/base/wps.nix。
   fonts = {
     # use fonts specified by user rather than default ones
     enableDefaultPackages = false;
@@ -49,7 +58,7 @@
         "JetBrainsMono Nerd Font"
         "Noto Color Emoji"
       ];
-      emoji = ["Noto Color Emoji"];
+      emoji = [ "Noto Color Emoji" ];
     };
   };
 

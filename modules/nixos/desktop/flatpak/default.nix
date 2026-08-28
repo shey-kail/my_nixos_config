@@ -3,8 +3,7 @@
   #  inputs,
   lib,
   ...
-}:
-{
+}: {
   imports = [
     nix-flatpak.nixosModules.nix-flatpak
   ];
