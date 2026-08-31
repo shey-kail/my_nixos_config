@@ -11,7 +11,6 @@
     scrcpy
 
     pkgs.nur.repos.zerozawa.deepseek-harness
-    codex
     officecli
 
     gimp
