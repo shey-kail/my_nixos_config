@@ -38,7 +38,7 @@ nix eval .#evalTests --show-trace --print-build-logs --verbose
 flake 入口链: `flake.nix` → `outputs/default.nix` → `outputs/<arch>/default.nix` → `outputs/<arch>/src/<host>.nix`
 
 ```
-flake.nix                # 声明 inputs(nixpkgs/unstable、home-manager、agenix、dms-plugin-registry、mysecrets 等)
+flake.nix                # 声明 inputs(nixpkgs/unstable、home-manager、plasma-manager、agenix、dms-plugin-registry、mysecrets 等)
 outputs/
   default.nix            # 组装所有系统输出:packages / checks / devShells / formatter
   x86_64-linux/
@@ -91,15 +91,16 @@ secrets/nixos.nix        # agenix secret 定义(指向 mysecrets 输入中的 .a
 
 ## 关键模块入口
 
-| 想改的东西 | 看哪里 |
-|---|---|
-| 全局 Nix 设置(GC、镜像源、allowUnfree) | `modules/nixos/base/nix.nix` |
-| 主机名 / 网络 / systemd-boot | `hosts/wujie/default.nix`、`modules/nixos/base/core.nix` |
-| 系统包 | `modules/nixos/base/packages.nix`、`modules/nixos/desktop/packages.nix` |
-| 用户 / shell / 终端 | `home/linux/`、`home/base/core/`、`home/base/tui/` |
-| Hyprland + DMS 配置 | `modules/nixos/desktop/hyprland/`、`modules/nixos/desktop/dms/`(用 nixpkgs `programs.hyprland` / `programs.dms-shell`) |
-| 代理订阅 / sing-box | `modules/nixos/base/singbox/singbox.nix` + `singbox-templates/` |
-| dae 流量规则 | `modules/nixos/base/dae/dae.nix` + `dae/config.dae` |
-| netflow 客户端 | `modules/nixos/base/netflow/default.nix` + `pkgs/netflow.nix` |
-| 自定义包 | `pkgs/*.nix`(由 `overlays/overlay/all-packages.nix` 自动 callPackage) |
-| 密钥(agenix) | `secrets/nixos.nix`,本体在外部 `mysecrets` 仓库 |
+| 想改的东西                             | 看哪里                                                                                                                 |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| 全局 Nix 设置(GC、镜像源、allowUnfree) | `modules/nixos/base/nix.nix`                                                                                           |
+| 主机名 / 网络 / systemd-boot           | `hosts/wujie/default.nix`、`modules/nixos/base/core.nix`                                                               |
+| 系统包                                 | `modules/nixos/base/packages.nix`、`modules/nixos/desktop/packages.nix`                                                |
+| 用户 / shell / 终端                    | `home/linux/`、`home/base/core/`、`home/base/tui/`                                                                     |
+| KDE Plasma 6(默认桌面)                 | `modules/nixos/desktop/kde/` + `plasma-manager` 输入 + `home/linux/gui/base/plasma6/`(dotfiles)                        |
+| Hyprland + DMS(备选会话)               | `modules/nixos/desktop/hyprland/`、`modules/nixos/desktop/dms/`(用 nixpkgs `programs.hyprland` / `programs.dms-shell`) |
+| 代理订阅 / sing-box                    | `modules/nixos/base/singbox/singbox.nix` + `singbox-templates/`                                                        |
+| dae 流量规则                           | `modules/nixos/base/dae/dae.nix` + `dae/config.dae`                                                                    |
+| netflow 客户端                         | `modules/nixos/base/netflow/default.nix` + `pkgs/netflow.nix`                                                          |
+| 自定义包                               | `pkgs/*.nix`(由 `overlays/overlay/all-packages.nix` 自动 callPackage)                                                  |
+| 密钥(agenix)                           | `secrets/nixos.nix`,本体在外部 `mysecrets` 仓库                                                                        |

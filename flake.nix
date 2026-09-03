@@ -40,6 +40,13 @@
 
     nix-gaming.url = "github:fufexan/nix-gaming";
 
+    # KDE Plasma 6 桌面配置(programs.plasma)
+    plasma-manager = {
+      url = "github:nix-community/plasma-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
+
     # add git hooks to format nix code before commit
     pre-commit-hooks = {
       url = "github:cachix/pre-commit-hooks.nix";

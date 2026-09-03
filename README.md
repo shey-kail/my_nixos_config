@@ -30,31 +30,31 @@ flake.nix
 
 ## 二、Flake Inputs
 
-| input | 用途 |
-|---|---|
-| `nixpkgs` | `nixos-unstable` 分支 |
-| `home-manager` | 用户级配置(`nixpkgs` 跟随主 flake) |
-| `dms-plugin-registry` | DankMaterialShell 插件注册表 |
-| `nix-flatpak` | Flatpak 服务模块 |
-| `nur` | NUR overlay |
-| `nix-gaming` | 游戏相关 overlay |
-| `haumea` | v0.2.2 文件系统模块加载器 |
-| `agenix` | **锁死 commit `4835b1dc`(2025-05-18)**,用 ryantm/agenix |
-| `pre-commit-hooks` | cachix/pre-commit-hooks.nix |
-| `mysecrets` | `git+ssh://git@codeberg.org/sheykail/mysecrets.git`,`flake = false` |
+| input                 | 用途                                                                |
+| --------------------- | ------------------------------------------------------------------- |
+| `nixpkgs`             | `nixos-unstable` 分支                                               |
+| `home-manager`        | 用户级配置(`nixpkgs` 跟随主 flake)                                  |
+| `dms-plugin-registry` | DankMaterialShell 插件注册表                                        |
+| `nix-flatpak`         | Flatpak 服务模块                                                    |
+| `nur`                 | NUR overlay                                                         |
+| `nix-gaming`          | 游戏相关 overlay                                                    |
+| `haumea`              | v0.2.2 文件系统模块加载器                                           |
+| `agenix`              | **锁死 commit `4835b1dc`(2025-05-18)**,用 ryantm/agenix             |
+| `pre-commit-hooks`    | cachix/pre-commit-hooks.nix                                         |
+| `mysecrets`           | `git+ssh://git@codeberg.org/sheykail/mysecrets.git`,`flake = false` |
 
 ---
 
 ## 三、Outputs(`outputs/default.nix`)
 
-| output | 内容 |
-|---|---|
-| `nixosConfigurations` | 每台主机的系统配置(目前只有 `wujie`) |
-| `packages` | haumea `src/*/packages` 合并 + 自动扫描 `pkgs/` 目录的 callPackage |
-| `evalTests` | 单元测试断言(空 = 通过) |
-| `checks.<system>.pre-commit-check` | alejandra + typos + prettier |
-| `devShells.default` | `alejandra / deadnix / statix / typos / prettier / gcc / bashInteractive` |
-| `formatter` | `alejandra` |
+| output                             | 内容                                                                      |
+| ---------------------------------- | ------------------------------------------------------------------------- |
+| `nixosConfigurations`              | 每台主机的系统配置(目前只有 `wujie`)                                      |
+| `packages`                         | haumea `src/*/packages` 合并 + 自动扫描 `pkgs/` 目录的 callPackage        |
+| `evalTests`                        | 单元测试断言(空 = 通过)                                                   |
+| `checks.<system>.pre-commit-check` | alejandra + typos + prettier                                              |
+| `devShells.default`                | `alejandra / deadnix / statix / typos / prettier / gcc / bashInteractive` |
+| `formatter`                        | `alejandra`                                                               |
 
 ---
 
@@ -63,6 +63,7 @@ flake.nix
 ### haumea 怎么用
 
 `outputs/x86_64-linux/default.nix:9`:
+
 ```nix
 data = haumea.lib.load {
   src = ./src;
@@ -84,12 +85,12 @@ scanPaths = path:
 
 应用点(全部 `imports = mylib.scanPaths ./.;`):
 
-| 路径 | 扫出的内容 |
-|---|---|
-| `modules/nixos/base/` | core / nix / networking / ssh / packages / user-group / i18n / zram / fcitx5 / virtualisation + 子目录 `singbox / dae / netflow` |
-| `modules/nixos/desktop/` | kde / flatpak / fhs / fonts / peripherals / security / packages |
-| `home/base/{core, tui, gui}/` | 跨平台 home 配置 |
-| `home/linux/{base, gui/base}/` | Linux 专用 home 配置 |
+| 路径                           | 扫出的内容                                                                                                                       |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `modules/nixos/base/`          | core / nix / networking / ssh / packages / user-group / i18n / zram / fcitx5 / virtualisation + 子目录 `singbox / dae / netflow` |
+| `modules/nixos/desktop/`       | kde / flatpak / fhs / fonts / peripherals / security / packages                                                                  |
+| `home/base/{core, tui, gui}/`  | 跨平台 home 配置                                                                                                                 |
+| `home/linux/{base, gui/base}/` | Linux 专用 home 配置                                                                                                             |
 
 `pkgs/netflow/` 例外:手动 `imports = [ ./module.nix ./ui-module.nix ]`(需要严格控制导入顺序)。
 
@@ -140,11 +141,12 @@ scanPaths = path:
 
 ## 七、自定义包(`pkgs/`)
 
-| 包 | 用途 |
-|---|---|
+| 包        | 用途       |
+| --------- | ---------- |
 | `subpipe` | 订阅转换器 |
 
 扫描机制 `lib/scanPkgs.nix` 同时支持:
+
 - `pkgs/<name>.nix`(扁平,文件名作 attr 名)
 - `pkgs/<dir>/default.nix`(子目录,目录名作 attr 名)
 
@@ -167,6 +169,7 @@ overlays/overlay/all-packages.nix (再扫一遍 pkgs/ 走 callPackage)
 ## 九、Secrets 管理(agenix)
 
 `secrets/nixos.nix`:
+
 - 加密身份:`age.identityPaths = [ /etc/ssh/ssh_host_ed25519_key /home/shey/.ssh/id_rsa ]`(主机私钥 + 用户私钥均可解密)
 - 三类权限预设:`high_security`(root 0600)/ `user_readable`(用户 0500)/ `normal`(用户 0600)
 - 当前解密的密钥:
@@ -181,10 +184,12 @@ overlays/overlay/all-packages.nix (再扫一遍 pkgs/ 走 callPackage)
 ## 十、Home-Manager
 
 `outputs/x86_64-linux/src/wujie.nix` 给 `home-modules` 注入:
+
 - `home/linux/gui.nix`(cross-OS + Linux 通用聚合点)
 - `hosts/wujie/home.nix`(主机特有)
 
 `home/linux/gui.nix` 聚合:
+
 - `home/base/{core, tui, gui, home.nix}`(跨平台)
 - `home/linux/{base, gui}`(Linux 专用)
 - `home/linux/gui/base/fcitx5`(桌面输入法)
@@ -196,33 +201,33 @@ overlays/overlay/all-packages.nix (再扫一遍 pkgs/ 走 callPackage)
 
 ## 十一、关键设计取舍
 
-| 设计 | 取舍 |
-|---|---|
-| 走 `nixos-unstable` | 拿最新包,代价是偶发回归 |
-| `agenix` 锁 commit | 不被上游 breaking 变化影响 |
-| `pkgs-stable` 在 specialArgs | 留作模块内 `pkgs-stable.<pkg>` 拿稳定版兜底 |
-| `dae` 硬依赖代理服务 | 想关闭所有代理得手动 `disable` dae 引用 |
-| `singbox` wantedBy 硬编码 | 与 `dae` 解耦困难,改用建议在 `singbox.nix` 里加 `enable` 选项 |
-| 镜像走 USTC + 清华 | `modules/nixos/base/nix.nix` 里 `substituters` 配置 |
-| `mysecrets` 走 SSH+codeberg | 网络受限环境会卡 `nix flake update` |
+| 设计                         | 取舍                                                          |
+| ---------------------------- | ------------------------------------------------------------- |
+| 走 `nixos-unstable`          | 拿最新包,代价是偶发回归                                       |
+| `agenix` 锁 commit           | 不被上游 breaking 变化影响                                    |
+| `pkgs-stable` 在 specialArgs | 留作模块内 `pkgs-stable.<pkg>` 拿稳定版兜底                   |
+| `dae` 硬依赖代理服务         | 想关闭所有代理得手动 `disable` dae 引用                       |
+| `singbox` wantedBy 硬编码    | 与 `dae` 解耦困难,改用建议在 `singbox.nix` 里加 `enable` 选项 |
+| 镜像走 USTC + 清华           | `modules/nixos/base/nix.nix` 里 `substituters` 配置           |
+| `mysecrets` 走 SSH+codeberg  | 网络受限环境会卡 `nix flake update`                           |
 
 ---
 
 ## 十二、修改工作的对应位置速查
 
-| 想改什么 | 看哪里 |
-|---|---|
-| 全局 Nix 镜像/GC/allowUnfree | `modules/nixos/base/nix.nix` |
-| 主机名/IP/systemd-boot | `hosts/wujie/default.nix` + `hardware-configuration.nix` |
-| 系统级包 | `modules/nixos/{base,desktop}/packages.nix` |
-| 用户级 GUI | `home/linux/gui/base/` |
-| KDE Plasma | `modules/nixos/desktop/kde/` + `home/linux/gui/base/plasma6/` |
-| sing-box 订阅/模板 | `modules/nixos/base/singbox/singbox.nix` + `singbox-templates/` |
-| dae 流量规则 | `modules/nixos/base/dae/dae.nix` + `config.dae` |
-| netflow 客户端 | `modules/nixos/base/netflow/default.nix` → `pkgs/netflow/` |
-| 新主机 | `outputs/x86_64-linux/src/<name>.nix` + `hosts/<name>/` + `vars/networking.nix` |
-| 新系统模块 | 丢到 `modules/nixos/{base,desktop}/` 任意目录,`scanPaths` 自动捡 |
-| 密钥 | `secrets/nixos.nix` + 外部 `mysecrets` 仓库的 `.age` 文件 |
+| 想改什么                     | 看哪里                                                                          |
+| ---------------------------- | ------------------------------------------------------------------------------- |
+| 全局 Nix 镜像/GC/allowUnfree | `modules/nixos/base/nix.nix`                                                    |
+| 主机名/IP/systemd-boot       | `hosts/wujie/default.nix` + `hardware-configuration.nix`                        |
+| 系统级包                     | `modules/nixos/{base,desktop}/packages.nix`                                     |
+| 用户级 GUI                   | `home/linux/gui/base/`                                                          |
+| KDE Plasma                   | `modules/nixos/desktop/kde/` + `home/linux/gui/base/plasma6/`                   |
+| sing-box 订阅/模板           | `modules/nixos/base/singbox/singbox.nix` + `singbox-templates/`                 |
+| dae 流量规则                 | `modules/nixos/base/dae/dae.nix` + `config.dae`                                 |
+| netflow 客户端               | `modules/nixos/base/netflow/default.nix` → `pkgs/netflow/`                      |
+| 新主机                       | `outputs/x86_64-linux/src/<name>.nix` + `hosts/<name>/` + `vars/networking.nix` |
+| 新系统模块                   | 丢到 `modules/nixos/{base,desktop}/` 任意目录,`scanPaths` 自动捡                |
+| 密钥                         | `secrets/nixos.nix` + 外部 `mysecrets` 仓库的 `.age` 文件                       |
 
 ---
 

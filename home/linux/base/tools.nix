@@ -10,7 +10,7 @@
 
     scrcpy
 
-    pkgs.nur.repos.zerozawa.deepseek-harness
+    #    pkgs.nur.repos.zerozawa.deepseek-harness
     officecli
 
     gimp

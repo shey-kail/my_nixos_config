@@ -1,0 +1,16 @@
+[Desktop Entry]
+DefaultProfile=my.profile
+
+[General]
+ConfigVersion=1
+
+[KonsoleWindow]
+UseSingleInstance=true
+
+[SearchSettings]
+SearchCaseSensitive=true
+SearchNoWrap=true
+SearchRegExpression=true
+
+[UiSettings]
+ColorScheme=
