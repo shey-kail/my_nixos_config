@@ -2,7 +2,8 @@
   inputs,
   lib,
   ...
-}: let
+}:
+let
   inherit (lib) strings;
   inherit (lib.attrsets) filterAttrs attrNames;
   overlayDir = ./overlay;
@@ -20,4 +21,4 @@
     inputs.chinese-fonts-overlay.overlays.default
   ];
 in
-  localOverlays ++ flakeOverlays
+localOverlays ++ flakeOverlays

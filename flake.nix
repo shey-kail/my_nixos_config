@@ -82,5 +82,6 @@
     # 微软 EULA:仅在拥有 Win11 合法授权时使用。
     # 注:不要 follows nixpkgs(httpdirfs 在 stable channel 坏掉,见 README)
     chinese-fonts-overlay.url = "github:brsvh/chinese-fonts-overlay/main";
+
   };
 }
