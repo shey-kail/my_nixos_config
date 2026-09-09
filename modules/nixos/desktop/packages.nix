@@ -2,7 +2,8 @@
   pkgs,
   lib,
   ...
-}: {
+}:
+{
   boot.loader.timeout = lib.mkForce 10; # wait for x seconds to select the boot entry
 
   environment.systemPackages = with pkgs; [
@@ -29,8 +30,6 @@
     nix-ld
 
     firefox
-
-    alacritty
 
     # icon theme(Qogir,扁平化多色,GTK/Qt 应用图标)
     qogir-icon-theme
