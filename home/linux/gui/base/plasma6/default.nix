@@ -19,6 +19,11 @@ in {
 
     # kup for file backup
     pkgs.kdePackages.kup
+
+    # Kvantum engine (Qt6) — required by the Windows Modern (Win11) theme
+    # and by We10XOS' kvantum widget style. Provides libkvantum.so style
+    # plugin + kvantummanager / kvantumpreview.
+    pkgs.qtstyleplugin-kvantum
   ];
 
   # enable kde connect
@@ -200,6 +205,14 @@ in {
 
   home.activation.ensureWin10Icons = lib.hm.dag.entryAfter ["writeBoundary"] ''
     ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/icons}/ ${config.xdg.dataHome}/icons/
+  '';
+
+  # ---- Kvantum style themes (~/.config/Kvantum) ----
+  # Windows-modern Kvantum theme (light + dark variants) and the theme
+  # selector kvantum.kvconfig. Read by the Kvantum engine (Qt6) via
+  # ~/.config/Kvantum/.
+  home.activation.ensureKvantumThemes = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./dotfiles_writable/Kvantum}/ ${config.xdg.configHome}/Kvantum/
   '';
 
   #  imports = [

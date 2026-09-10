@@ -120,7 +120,7 @@ Theme=Windows-10
 LookAndFeelPackage=com.github.yeyushengfan258.We10XOS-dark
 contrast=4
 frameContrast=0.2
-widgetStyle=Fusion
+widgetStyle=kvantum
 
 [KFileDialog Settings]
 Allow Expansion=false
