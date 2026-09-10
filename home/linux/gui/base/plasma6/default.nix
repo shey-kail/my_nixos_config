@@ -178,6 +178,30 @@ in {
     ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./dotfiles_writable/kde.org}/ ${config.xdg.configHome}/kde.org/
   '';
 
+  # ---- Windows 10 look themes (~/.local/share) ----
+  # These are data themes (Aurorae decoration, look-and-feel, desktoptheme,
+  # color-schemes, icon theme) installed into ~/.local/share so Plasma 6 can
+  # pick them up. NOT covered by the ensure* ~/.config rsync snapshots above.
+  home.activation.ensureWin10Aurorae = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/aurorae}/ ${config.xdg.dataHome}/aurorae/
+  '';
+
+  home.activation.ensureWin10LookAndFeel = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/plasma/look-and-feel}/ ${config.xdg.dataHome}/plasma/look-and-feel/
+  '';
+
+  home.activation.ensureWin10DesktopTheme = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/plasma/desktoptheme}/ ${config.xdg.dataHome}/plasma/desktoptheme/
+  '';
+
+  home.activation.ensureWin10ColorSchemes = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/color-schemes}/ ${config.xdg.dataHome}/color-schemes/
+  '';
+
+  home.activation.ensureWin10Icons = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/icons}/ ${config.xdg.dataHome}/icons/
+  '';
+
   #  imports = [
   #    (ensureSectionInFile {
   #      file = "${config.xdg.configHome}/kuprc";
