@@ -125,4 +125,4 @@ Scale=2
 
 [org.kde.kdecoration2]
 library=org.kde.kwin.aurorae.v2
-theme=__aurorae__svg__Windows10-dark
+theme=__aurorae__svg__windows-modern-dark-aurorae

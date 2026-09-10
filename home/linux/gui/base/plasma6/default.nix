@@ -183,36 +183,50 @@ in {
     ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./dotfiles_writable/kde.org}/ ${config.xdg.configHome}/kde.org/
   '';
 
-  # ---- Windows 10 look themes (~/.local/share) ----
-  # These are data themes (Aurorae decoration, look-and-feel, desktoptheme,
-  # color-schemes, icon theme) installed into ~/.local/share so Plasma 6 can
-  # pick them up. NOT covered by the ensure* ~/.config rsync snapshots above.
-  home.activation.ensureWin10Aurorae = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/aurorae}/ ${config.xdg.dataHome}/aurorae/
-  '';
-
-  home.activation.ensureWin10LookAndFeel = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/plasma/look-and-feel}/ ${config.xdg.dataHome}/plasma/look-and-feel/
-  '';
-
-  home.activation.ensureWin10DesktopTheme = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/plasma/desktoptheme}/ ${config.xdg.dataHome}/plasma/desktoptheme/
-  '';
-
-  home.activation.ensureWin10ColorSchemes = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/color-schemes}/ ${config.xdg.dataHome}/color-schemes/
-  '';
-
-  home.activation.ensureWin10Icons = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/icons}/ ${config.xdg.dataHome}/icons/
-  '';
-
   # ---- Kvantum style themes (~/.config/Kvantum) ----
   # Windows-modern Kvantum theme (light + dark variants) and the theme
   # selector kvantum.kvconfig. Read by the Kvantum engine (Qt6) via
   # ~/.config/Kvantum/.
   home.activation.ensureKvantumThemes = lib.hm.dag.entryAfter ["writeBoundary"] ''
     ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./dotfiles_writable/Kvantum}/ ${config.xdg.configHome}/Kvantum/
+  '';
+
+  # ---- Windows Modern (KDE-Windows-Modern) Win11 theme pack (~/.local/share) ----
+  # Data components of the Windows 11 theme for Plasma 6: aurorae decorations,
+  # color schemes, desktop theme, global (look-and-feel) theme, panel layout
+  # template, QML applets (start menu / show desktop / digital clock) and
+  # wallpapers. The C++ applets (system tray, icon tasks) are intentionally
+  # skipped here — they need compilation.
+  home.activation.ensureWinModernAurorae = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/windows-modern/aurorae}/ ${config.xdg.dataHome}/aurorae/
+  '';
+
+  home.activation.ensureWinModernColorSchemes = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/windows-modern/color-schemes}/ ${config.xdg.dataHome}/color-schemes/
+  '';
+
+  home.activation.ensureWinModernDesktopTheme = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/windows-modern/desktoptheme}/ ${config.xdg.dataHome}/plasma/desktoptheme/
+  '';
+
+  home.activation.ensureWinModernLookAndFeel = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/windows-modern/look-and-feel}/ ${config.xdg.dataHome}/plasma/look-and-feel/
+  '';
+
+  home.activation.ensureWinModernLayout = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/windows-modern/layout-templates}/ ${config.xdg.dataHome}/plasma/layout-templates/
+  '';
+
+  home.activation.ensureWinModernApplets = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/windows-modern/applets}/ ${config.xdg.dataHome}/plasma/plasmoids/
+  '';
+
+  home.activation.ensureWinModernWallpapers = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/windows-modern/wallpaper}/ ${config.xdg.dataHome}/wallpapers/
+  '';
+
+  home.activation.ensureWinModernIcons = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/windows-modern/icons}/ ${config.xdg.dataHome}/icons/
   '';
 
   #  imports = [

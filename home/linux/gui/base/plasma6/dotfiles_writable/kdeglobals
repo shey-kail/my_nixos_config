@@ -114,10 +114,10 @@ ColorSchemeHash=892aa5073e43f7fb591a730fb5934f8f32007378
 UseSystemBell=true
 
 [Icons]
-Theme=Windows-10
+Theme=windows-modern
 
 [KDE]
-LookAndFeelPackage=com.github.yeyushengfan258.We10XOS-dark
+LookAndFeelPackage=org.kde.windowsmodern.dark
 contrast=4
 frameContrast=0.2
 widgetStyle=kvantum
