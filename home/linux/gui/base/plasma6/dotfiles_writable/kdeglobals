@@ -120,7 +120,7 @@ Theme=We10X
 LookAndFeelPackage=org.kde.windowsmodern.dark
 contrast=4
 frameContrast=0.2
-widgetStyle=kvantum
+widgetStyle=kvantum-dark
 
 [KFileDialog Settings]
 Allow Expansion=false
