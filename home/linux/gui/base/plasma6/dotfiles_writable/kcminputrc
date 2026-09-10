@@ -1,3 +1,6 @@
 [ButtonRebinds][Mouse]
 ExtraButton1=Key,Return
 ExtraButton2=Key,Space
+
+[Mouse]
+cursorSize=72
