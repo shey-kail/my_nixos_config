@@ -229,6 +229,13 @@ in {
     ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/windows-modern/icons}/ ${config.xdg.dataHome}/icons/
   '';
 
+  # We10X / We10X-dark icon theme (user-selected icons; We10X-dark links
+  # into We10X via relative symlinks, so both must be installed together;
+  # rsync preserves the symlinks since both land side by side in icons/).
+  home.activation.ensureWe10xIcons = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.rsync}/bin/rsync -avz --chmod=D2755,F744 ${./themes/we10x-icons}/ ${config.xdg.dataHome}/icons/
+  '';
+
   #  imports = [
   #    (ensureSectionInFile {
   #      file = "${config.xdg.configHome}/kuprc";
