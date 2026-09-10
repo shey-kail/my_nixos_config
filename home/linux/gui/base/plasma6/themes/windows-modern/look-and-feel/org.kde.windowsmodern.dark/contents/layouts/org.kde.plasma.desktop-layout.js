@@ -81,8 +81,7 @@ function createWindowsModernPanel(screenId) {
     var spacerRight = panel.addWidget("org.kde.plasma.panelspacer");
 
     // 5. System tray — custom Win11/10 hybrid tray, or fall back to stock.
-    var tray = panel.addWidget("org.kde.windowsmodern.systemtray");
-    if (!tray) { tray = panel.addWidget("org.kde.plasma.systemtray"); }
+    var tray = panel.addWidget("org.kde.plasma.systemtray");
 
     // 6. Digital clock — Win11 puts the clock at the far right, with the date
     //    stacked below the time. Use the custom Windows Modern digital clock
