@@ -23,7 +23,7 @@ in {
     # Kvantum engine (Qt6) — required by the Windows Modern (Win11) theme
     # and by We10XOS' kvantum widget style. Provides libkvantum.so style
     # plugin + kvantummanager / kvantumpreview.
-    pkgs.qtstyleplugin-kvantum
+    pkgs.qt6Packages.qtstyleplugin-kvantum
   ];
 
   # enable kde connect
