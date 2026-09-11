@@ -222,6 +222,7 @@ overlays/overlay/all-packages.nix (再扫一遍 pkgs/ 走 callPackage)
 | 系统级包                     | `modules/nixos/{base,desktop}/packages.nix`                                     |
 | 用户级 GUI                   | `home/linux/gui/base/`                                                          |
 | KDE Plasma                   | `modules/nixos/desktop/kde/` + `home/linux/gui/base/plasma6/`                   |
+| KDE 桌面主题 / Win11 外观     | `home/linux/gui/base/plasma6/themes/`(数据主题)+ `dotfiles_writable/`(~/.config 快照)+ `default.nix` 的 `ensure*` rsync 段 |
 | sing-box 订阅/模板           | `modules/nixos/base/singbox/singbox.nix` + `singbox-templates/`                 |
 | dae 流量规则                 | `modules/nixos/base/dae/dae.nix` + `config.dae`                                 |
 | netflow 客户端               | `modules/nixos/base/netflow/default.nix` → `pkgs/netflow/`                      |

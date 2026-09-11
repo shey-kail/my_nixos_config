@@ -1,7 +1,9 @@
 # Desktop Related
 
 3. `base`: all common configurations for all desktops.
-4. `hyprland`: Hyprland's configuration.
+4. `base/plasma6`: KDE Plasma 6 (default desktop) — dotfile snapshot sync
+   (`dotfiles_writable/`) + theme pack (`themes/`) + Kvantum (Win11 look).
+5. `hyprland`: Hyprland's configuration.
 
 ## Why install I3/Hyprland in Home Manager instead of a NixOS Module?
 

@@ -97,7 +97,7 @@ secrets/nixos.nix        # agenix secret 定义(指向 mysecrets 输入中的 .a
 | 主机名 / 网络 / systemd-boot           | `hosts/wujie/default.nix`、`modules/nixos/base/core.nix`                                                               |
 | 系统包                                 | `modules/nixos/base/packages.nix`、`modules/nixos/desktop/packages.nix`                                                |
 | 用户 / shell / 终端                    | `home/linux/`、`home/base/core/`、`home/base/tui/`                                                                     |
-| KDE Plasma 6(默认桌面)                 | `modules/nixos/desktop/kde/` + `plasma-manager` 输入 + `home/linux/gui/base/plasma6/`(dotfiles)                        |
+| KDE Plasma 6(默认桌面)                 | `modules/nixos/desktop/kde/` + `home/linux/gui/base/plasma6/`(Win11 主题:`themes/` 数据 + `dotfiles_writable/` 快照 + `ensure*` rsync 段 + Kvantum) |
 | Hyprland + DMS(备选会话)               | `modules/nixos/desktop/hyprland/`、`modules/nixos/desktop/dms/`(用 nixpkgs `programs.hyprland` / `programs.dms-shell`) |
 | 代理订阅 / sing-box                    | `modules/nixos/base/singbox/singbox.nix` + `singbox-templates/`                                                        |
 | dae 流量规则                           | `modules/nixos/base/dae/dae.nix` + `dae/config.dae`                                                                    |
