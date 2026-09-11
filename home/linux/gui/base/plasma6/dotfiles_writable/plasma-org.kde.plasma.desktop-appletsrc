@@ -39,6 +39,10 @@ wallpaperplugin=org.kde.image
 DialogHeight=630
 DialogWidth=810
 
+[Containments][231][General]
+iconSize=2
+useTypeAhead=true
+
 [Containments][231][Wallpaper][org.kde.image][General]
 Image=file:///home/shey/.local/share/wallpapers/
 SlidePaths=/home/shey/.local/share/wallpapers/,/nix/store/fxl9bg83snj7zkyacgsja0q2dr70w73d-breeze-6.7.4/share/wallpapers/,/run/current-system/sw/share/wallpapers/
@@ -60,12 +64,15 @@ plugin=org.kde.plasma.panelspacer
 immutability=1
 plugin=org.kde.plasma.icontasks
 
+[Containments][232][Applets][236][Configuration][ConfigDialog]
+DialogHeight=630
+DialogWidth=810
+
 [Containments][232][Applets][236][Configuration][General]
 groupingStrategy=1
 launchers=
 showOnlyCurrentActivity=false
-showOnlyCurrentDesktop=false
-showOnlyCurrentScreen=false
+showOnlyCurrentScreen=true
 
 [Containments][232][Applets][256]
 immutability=1
@@ -204,12 +211,15 @@ plugin=org.kde.plasma.panelspacer
 immutability=1
 plugin=org.kde.plasma.icontasks
 
+[Containments][290][Applets][292][Configuration][ConfigDialog]
+DialogHeight=630
+DialogWidth=810
+
 [Containments][290][Applets][292][Configuration][General]
 groupingStrategy=1
 launchers=
 showOnlyCurrentActivity=false
-showOnlyCurrentDesktop=false
-showOnlyCurrentScreen=false
+showOnlyCurrentScreen=true
 
 [Containments][290][Applets][293]
 immutability=1
