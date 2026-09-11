@@ -2,8 +2,7 @@
   lib,
   pkgs,
   ...
-}:
-{
+}: {
   # 注意:不启用 fontDir(不生成 /run/current-system/sw/share/X11/fonts)。
   # nixpkgs 的 flatpak 补丁 fix-fonts-icons.patch 会在该目录存在时,
   # 把宿主办字体 + 相关 /nix/store 路径暴露给**所有** flatpak 应用。
@@ -27,6 +26,10 @@
 
       # 微软字体(Windows 11 zh-CN ISO 全量)
       windows-fonts
+
+      # 本地 GB2312 国标字体(仿宋_GB2312 / 黑体 / 宋体,公文/WPS 常用)
+      # 从 https://github.com/XiangyunHuang/fonts 收集
+      (pkgs.callPackage ./gb2312-fonts.nix {})
 
       # Noto 系列字体(Google 主导),只装彩色 emoji,思源已经覆盖 CJK
       noto-fonts-color-emoji # 彩色的表情符号字体
@@ -58,7 +61,7 @@
         "JetBrainsMono Nerd Font"
         "Noto Color Emoji"
       ];
-      emoji = [ "Noto Color Emoji" ];
+      emoji = ["Noto Color Emoji"];
     };
   };
 
