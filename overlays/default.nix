@@ -2,8 +2,7 @@
   inputs,
   lib,
   ...
-}:
-let
+}: let
   inherit (lib) strings;
   inherit (lib.attrsets) filterAttrs attrNames;
   overlayDir = ./overlay;
@@ -18,7 +17,9 @@ let
 
   # 第三方 flake overlay:在这里集中登记
   flakeOverlays = [
-    inputs.chinese-fonts-overlay.overlays.default
+    # office-fonts:基于 chinese-fonts-overlay 的字体集(含全部上游字体
+    # + 自定义的仿宋_GB2312 / 楷体_GB2312 公文国标字体)
+    inputs.office-fonts.overlays.default
   ];
 in
-localOverlays ++ flakeOverlays
+  localOverlays ++ flakeOverlays

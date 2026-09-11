@@ -78,16 +78,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Windows 11 字体(Arial/Calibri/Segoe UI/Times New Roman/微软雅黑/宋体/仿宋/楷体/黑体 等)
-    # 微软 EULA:仅在拥有 Win11 合法授权时使用。
-    # 注:不要 follows nixpkgs(httpdirfs 在 stable channel 坏掉,见 README)
-    chinese-fonts-overlay.url = "github:brsvh/chinese-fonts-overlay/main";
-
-    # 办公公文字体库(GB/T 9704-2012:仿宋_GB2312/楷体_GB2312/方正小标宋等)
-    # gitee 远程仓库(git@gitee.com:shey_kail/office_fonts.git)
+    # 中文字体集(基于 chinese-fonts-overlay,含仿宋_GB2312 / 楷体_GB2312 等公文国标字体)
+    # gitee 远程 flake:提供 overlays.default(pkgs.foundertype-gpu-fonts / windows-fonts /
+    # office-fonts 等)和 packages.<font> 选装
     office-fonts = {
       url = "git+ssh://git@gitee.com/shey_kail/office_fonts.git";
-      flake = false;
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 }

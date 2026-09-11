@@ -26,9 +26,9 @@
       # 微软字体(Windows 11 zh-CN ISO 全量)
       windows-fonts
 
-      # 本地公文标准中文字体(GB/T 9704-2012:仿宋_GB2312/楷体_GB2312/
-      # 方正小标宋等全套),来自 DoveOutland/Common-Chinese-office-fonts-font-library-
-      (pkgs.callPackage ./gb2312-fonts.nix {})
+      # 公文国标字体(GB/T 9704-2012:仿宋_GB2312 / 楷体_GB2312)
+      # 来自 office-fonts flake(基于 chinese-fonts-overlay,overlay 已注册进 pkgs)
+      office-fonts
 
       # Noto 系列字体(Google 主导),只装彩色 emoji,思源已经覆盖 CJK
       noto-fonts-color-emoji # 彩色的表情符号字体

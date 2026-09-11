@@ -24,25 +24,6 @@
         "type": "github"
       }
     },
-    "chinese-fonts-overlay": {
-      "inputs": {
-        "nixpkgs": "nixpkgs"
-      },
-      "locked": {
-        "lastModified": 1783394282,
-        "narHash": "sha256-aHKHSvTLProiVzyMKOo+nbRff9Ts3dTX9PpxlYcc084=",
-        "owner": "brsvh",
-        "repo": "chinese-fonts-overlay",
-        "rev": "da90d47fa1a6f8fbfcc5795bc9351c98142f37ea",
-        "type": "github"
-      },
-      "original": {
-        "owner": "brsvh",
-        "ref": "main",
-        "repo": "chinese-fonts-overlay",
-        "type": "github"
-      }
-    },
     "darwin": {
       "inputs": {
         "nixpkgs": [
@@ -299,7 +280,7 @@
         "flake-compat": "flake-compat",
         "flake-parts": "flake-parts",
         "git-hooks": "git-hooks",
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs"
       },
       "locked": {
         "lastModified": 1788236945,
@@ -317,18 +298,18 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1782545840,
-        "narHash": "sha256-PkBPmP5ofNtunCU7/tfn6wi9OLlzFGcHAqqmY+/mwUI=",
-        "ref": "nixpkgs-unstable",
-        "rev": "3d46470bb3030020f7e1361f33514854f5bfa86d",
-        "revCount": 1023445,
-        "type": "git",
-        "url": "https://github.com/NixOS/nixpkgs.git"
+        "lastModified": 1787964612,
+        "narHash": "sha256-0N9nghg3nwzX6b6qc77EzjR9cu/Z+UR66FlfsCqiURs=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "e8be7818e19ada32105a8af937a6a473b38167ca",
+        "type": "github"
       },
       "original": {
+        "owner": "NixOS",
         "ref": "nixpkgs-unstable",
-        "type": "git",
-        "url": "https://github.com/NixOS/nixpkgs.git"
+        "repo": "nixpkgs",
+        "type": "github"
       }
     },
     "nixpkgs-lib": {
@@ -347,22 +328,6 @@
       }
     },
     "nixpkgs_2": {
-      "locked": {
-        "lastModified": 1787964612,
-        "narHash": "sha256-0N9nghg3nwzX6b6qc77EzjR9cu/Z+UR66FlfsCqiURs=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "e8be7818e19ada32105a8af937a6a473b38167ca",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixpkgs-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_3": {
       "locked": {
         "lastModified": 1788179007,
         "narHash": "sha256-hn1oU2rue2SYK8dAr8+WNZWtbsz1S2W5mnHlSEuh3bo=",
@@ -400,12 +365,16 @@
       }
     },
     "office-fonts": {
-      "flake": false,
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
       "locked": {
-        "lastModified": 1789103232,
-        "narHash": "sha256-GafSUAjI7W0OMnOkCSN9VX3RenyKip8IDK4q98kzdIQ=",
+        "lastModified": 1789110582,
+        "narHash": "sha256-j2HdOJIZuU2/cMgqRvc6YoPQy4LVlags5RQwxgr6V2s=",
         "ref": "refs/heads/main",
-        "rev": "204898368c448ada779951472c8f2eb1de85c04c",
+        "rev": "acac47c493338d50317b5fb328e10e68ce3dd940",
         "revCount": 1,
         "type": "git",
         "url": "ssh://git@gitee.com/shey_kail/office_fonts.git"
@@ -462,7 +431,6 @@
     "root": {
       "inputs": {
         "agenix": "agenix",
-        "chinese-fonts-overlay": "chinese-fonts-overlay",
         "dms-plugin-registry": "dms-plugin-registry",
         "flake-utils": "flake-utils",
         "haumea": "haumea",
@@ -470,7 +438,7 @@
         "mysecrets": "mysecrets",
         "nix-flatpak": "nix-flatpak",
         "nix-gaming": "nix-gaming",
-        "nixpkgs": "nixpkgs_3",
+        "nixpkgs": "nixpkgs_2",
         "nur": "nur",
         "office-fonts": "office-fonts",
         "plasma-manager": "plasma-manager",
