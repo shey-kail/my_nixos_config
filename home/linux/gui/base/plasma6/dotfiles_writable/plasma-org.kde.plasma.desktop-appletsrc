@@ -16,6 +16,14 @@ location=0
 plugin=org.kde.plasma.folder
 wallpaperplugin=org.kde.image
 
+[Containments][230][ConfigDialog]
+DialogHeight=630
+DialogWidth=810
+
+[Containments][230][Wallpaper][org.kde.image][General]
+Image=file:///home/shey/.local/share/wallpapers/
+SlidePaths=/home/shey/.local/share/wallpapers/,/nix/store/fxl9bg83snj7zkyacgsja0q2dr70w73d-breeze-6.7.4/share/wallpapers/,/run/current-system/sw/share/wallpapers/
+
 [Containments][231]
 ItemGeometries-1680x1050=
 ItemGeometriesHorizontal=
@@ -26,6 +34,14 @@ lastScreen=1
 location=0
 plugin=org.kde.plasma.folder
 wallpaperplugin=org.kde.image
+
+[Containments][231][ConfigDialog]
+DialogHeight=630
+DialogWidth=810
+
+[Containments][231][Wallpaper][org.kde.image][General]
+Image=file:///home/shey/.local/share/wallpapers/
+SlidePaths=/home/shey/.local/share/wallpapers/,/nix/store/fxl9bg83snj7zkyacgsja0q2dr70w73d-breeze-6.7.4/share/wallpapers/,/run/current-system/sw/share/wallpapers/
 
 [Containments][232]
 activityId=
@@ -57,7 +73,7 @@ plugin=org.kde.plasma.kicker
 
 [Containments][232][Applets][256][Configuration]
 popupHeight=454
-popupWidth=308
+popupWidth=675
 
 [Containments][232][Applets][256][Configuration][ConfigDialog]
 DialogHeight=630
@@ -65,6 +81,9 @@ DialogWidth=810
 
 [Containments][232][Applets][256][Configuration][General]
 favoritesPortedToKAstats=true
+
+[Containments][232][Applets][256][Shortcuts]
+global=Meta+D
 
 [Containments][232][Applets][273]
 immutability=1
@@ -311,10 +330,10 @@ AppletOrder=293;292;291;295;294
 
 [Containments][324]
 activityId=
-formfactor=2
+formfactor=3
 immutability=1
 lastScreen=0
-location=3
+location=6
 plugin=org.kde.panel
 wallpaperplugin=org.kde.image
 
@@ -336,10 +355,10 @@ AppletOrder=326
 
 [Containments][347]
 activityId=
-formfactor=2
+formfactor=3
 immutability=1
 lastScreen=1
-location=3
+location=6
 plugin=org.kde.panel
 wallpaperplugin=org.kde.image
 
