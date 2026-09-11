@@ -408,11 +408,11 @@
         "rev": "204898368c448ada779951472c8f2eb1de85c04c",
         "revCount": 1,
         "type": "git",
-        "url": "file:///home/shey/Codes/office_fonts"
+        "url": "ssh://git@gitee.com/shey_kail/office_fonts.git"
       },
       "original": {
         "type": "git",
-        "url": "file:///home/shey/Codes/office_fonts"
+        "url": "ssh://git@gitee.com/shey_kail/office_fonts.git"
       }
     },
     "plasma-manager": {

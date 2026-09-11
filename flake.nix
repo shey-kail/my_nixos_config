@@ -84,9 +84,9 @@
     chinese-fonts-overlay.url = "github:brsvh/chinese-fonts-overlay/main";
 
     # 办公公文字体库(GB/T 9704-2012:仿宋_GB2312/楷体_GB2312/方正小标宋等)
-    # 独立仓库 /home/shey/Codes/office_fonts,本地 git 输入
+    # gitee 远程仓库(git@gitee.com:shey_kail/office_fonts.git)
     office-fonts = {
-      url = "git+file:///home/shey/Codes/office_fonts";
+      url = "git+ssh://git@gitee.com/shey_kail/office_fonts.git";
       flake = false;
     };
   };
