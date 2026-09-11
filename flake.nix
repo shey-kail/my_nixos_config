@@ -83,5 +83,11 @@
     # 注:不要 follows nixpkgs(httpdirfs 在 stable channel 坏掉,见 README)
     chinese-fonts-overlay.url = "github:brsvh/chinese-fonts-overlay/main";
 
+    # 办公公文字体库(GB/T 9704-2012:仿宋_GB2312/楷体_GB2312/方正小标宋等)
+    # 独立仓库 /home/shey/Codes/office_fonts,本地 git 输入
+    office-fonts = {
+      url = "git+file:///home/shey/Codes/office_fonts";
+      flake = false;
+    };
   };
 }

@@ -399,6 +399,22 @@
         "type": "github"
       }
     },
+    "office-fonts": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789103232,
+        "narHash": "sha256-GafSUAjI7W0OMnOkCSN9VX3RenyKip8IDK4q98kzdIQ=",
+        "ref": "refs/heads/main",
+        "rev": "204898368c448ada779951472c8f2eb1de85c04c",
+        "revCount": 1,
+        "type": "git",
+        "url": "file:///home/shey/Codes/office_fonts"
+      },
+      "original": {
+        "type": "git",
+        "url": "file:///home/shey/Codes/office_fonts"
+      }
+    },
     "plasma-manager": {
       "inputs": {
         "home-manager": [
@@ -456,6 +472,7 @@
         "nix-gaming": "nix-gaming",
         "nixpkgs": "nixpkgs_3",
         "nur": "nur",
+        "office-fonts": "office-fonts",
         "plasma-manager": "plasma-manager",
         "pre-commit-hooks": "pre-commit-hooks"
       }
