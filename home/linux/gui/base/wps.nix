@@ -45,4 +45,24 @@
       rm -rf '${dest}'
       mv '${dest}.tmp' '${dest}'
     '';
+
+  # flatpak 沙盒对宿主机字体的感知不强:宿主机新装字体后,沙盒内
+  # fontconfig 缓存(~/.var/app/<app>/cache/fontconfig)不会自动失效,
+  # 导致 flatpak 应用(如 WPS)看不到新字体。
+  # 这里在每次 make rebuild 时:
+  #   1) 刷新宿主 fontconfig 缓存(fc-cache -f);
+  #   2) 对每个已安装的 flatpak 应用,在沙盒内再跑一次 fc-cache -f。
+  home.activation.flatpakFontCache = lib.hm.dag.entryAfter ["linkGeneration"] ''
+    # 宿主级刷新(新安装字体进入 fontconfig 索引)
+    ${pkgs.fontconfig}/bin/fc-cache -f >/dev/null 2>&1 || true
+
+    # 沙盒级刷新:逐个 flatpak 应用,在各自沙盒内重建字体缓存
+    if command -v '${pkgs.flatpak}/bin/flatpak' >/dev/null 2>&1; then
+      for app in $('${pkgs.flatpak}/bin/flatpak' list --app --columns=application 2>/dev/null); do
+        [ -z "$app" ] && continue
+        # 沙盒内 fc-cache:失败不阻塞 rebuild
+        '${pkgs.flatpak}/bin/flatpak' run --command=fc-cache -f "$app" >/dev/null 2>&1 || true
+      done
+    fi
+  '';
 }
