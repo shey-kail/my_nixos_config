@@ -17,6 +17,7 @@
         kate
         krunner
         baloo
+        ark # 归档管理器:已被 GNOME File Roller(libarchive)替代
         ;
     };
   };
