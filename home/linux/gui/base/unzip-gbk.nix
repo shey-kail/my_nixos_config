@@ -4,14 +4,19 @@
 # unzip 默认按 UTF-8 处理,中文会乱码。unzip 提供 `-O CHARSET` 指定源编码,
 # 但每次手动敲很麻烦。
 #
-# 方案:提供一个自动的 `unzip` wrapper(放在 home 层,优先级高于系统 unzip):
-#   - 若命令行带 -O/-I 则原样透传(用户显式指定优先)
-#   - 否则先按 GBK(-O GBK)尝试解压,抛错则回退 UTF-8(-O UTF-8)
-# 同时把 unar(自动检测编码的多格式解压器)一并装上备用。
+# 方案:
+#   1. unzip wrapper(终端自动 -O GBK)
+#   2. unar(命令行,自动检测编码,最可靠的兜底)
+#   3. GNOME File Roller(GUI 默认解压,libarchive 后端自动探测编码,
+#      替代 Ark 的 libzip 后端——Ark 对无 UTF-8 标志的 zip 中文名会乱码。
+#      zip 的 GUI 默认打开程序关联见 xdg.nix)
 {pkgs, ...}: {
   home.packages = [
     # unar:自动检测 zip/rar 等文件名编码,后台/手动场景的可靠备用
     pkgs.unar
+
+    # GNOME File Roller:GUI 解压,libarchive 后端自动编码探测(比 Ark 的 libzip 可靠)
+    pkgs.file-roller
 
     # 自定义 unzip wrapper,接入 home 的 bin(PATH 优先级最高)
     (pkgs.writeShellScriptBin "unzip" ''
