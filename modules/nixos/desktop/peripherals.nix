@@ -35,7 +35,12 @@
   #================================= Misc =================================
 
   services = {
-    printing.enable = true; # Enable CUPS to print documents.
+    # CUPS 打印服务
+    printing = {
+      enable = true;
+      # cups-browsed:自动发现局域网打印机(Deli M2000DNW 等 IPP/dnssd 设备)
+      browsing = true;
+    };
     geoclue2.enable = true; # Enable geolocation services.
   };
 }
