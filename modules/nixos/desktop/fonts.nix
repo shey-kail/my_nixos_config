@@ -2,7 +2,8 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   # 注意:不启用 fontDir(不生成 /run/current-system/sw/share/X11/fonts)。
   # nixpkgs 的 flatpak 补丁 fix-fonts-icons.patch 会在该目录存在时,
   # 把宿主办字体 + 相关 /nix/store 路径暴露给**所有** flatpak 应用。
@@ -60,7 +61,7 @@
         "JetBrainsMono Nerd Font"
         "Noto Color Emoji"
       ];
-      emoji = ["Noto Color Emoji"];
+      emoji = [ "Noto Color Emoji" ];
     };
   };
 
