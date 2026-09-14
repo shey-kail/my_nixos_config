@@ -20,6 +20,9 @@
     # office-fonts:基于 chinese-fonts-overlay 的字体集(含全部上游字体
     # + 自定义的仿宋_GB2312 / 楷体_GB2312 公文国标字体)
     inputs.office-fonts.overlays.default
+
+    # printer-drivers:佳能 UFR II + 得力 GDI 私有打印驱动
+    inputs.printer-drivers.overlays.default
   ];
 in
   localOverlays ++ flakeOverlays

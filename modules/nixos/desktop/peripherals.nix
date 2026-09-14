@@ -1,12 +1,8 @@
-{
-  pkgs,
-  inputs,
-  ...
-}: let
-  # 打印机私有驱动(佳能 UFR II / 得力 GDI),来自 printer-drivers flake
-  printerDrivers = with inputs.printer-drivers.packages.${pkgs.system}; [
-    canon-ufr2
-    deli-a111
+{pkgs, ...}: let
+  # 打印机私有驱动(佳能 UFR II / 得力 GDI),来自 printer-drivers overlay(pkgs.canon-ufr2 / pkgs.deli-a111)
+  printerDrivers = [
+    pkgs.canon-ufr2
+    pkgs.deli-a111
   ];
 in {
   #============================= Audio(PipeWire) =======================

@@ -428,6 +428,26 @@
         "type": "github"
       }
     },
+    "printer-drivers": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1789360323,
+        "narHash": "sha256-G4uWFjGerf13odXjDTK59QlazOH6nmTklwyxLIDX3H0=",
+        "ref": "refs/heads/main",
+        "rev": "a1708d5f4017b1528189e32c845c392ccca5ec3d",
+        "revCount": 4,
+        "type": "git",
+        "url": "ssh://git@gitee.com/shey_kail/printer-drivers.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@gitee.com/shey_kail/printer-drivers.git"
+      }
+    },
     "root": {
       "inputs": {
         "agenix": "agenix",
@@ -442,7 +462,8 @@
         "nur": "nur",
         "office-fonts": "office-fonts",
         "plasma-manager": "plasma-manager",
-        "pre-commit-hooks": "pre-commit-hooks"
+        "pre-commit-hooks": "pre-commit-hooks",
+        "printer-drivers": "printer-drivers"
       }
     },
     "systems": {
