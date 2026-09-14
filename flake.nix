@@ -85,5 +85,11 @@
       url = "git+ssh://git@gitee.com/shey_kail/office_fonts.git";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # 打印机私有驱动(佳能 UFR II / 得力 GDI)
+    printer-drivers = {
+      url = "git+ssh://git@gitee.com/shey_kail/printer-drivers.git";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 }
