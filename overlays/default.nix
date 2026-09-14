@@ -15,6 +15,13 @@
   # 本地手写 overlay:从 overlay/*.nix 自动 import
   localOverlays = map (f: import (toString overlayDir + "/${f}")) files;
 
+  # 浩辰CAD 2027:注入 deb 分片源(cadsoft flake 输入)后重新 callPackage
+  gstarOverlay = final: prev: let
+    gstarSrc = inputs.cadsoft;
+  in {
+    gstar-cad = prev.callPackage ../pkgs/gstar-cad {src = gstarSrc;};
+  };
+
   # 第三方 flake overlay:在这里集中登记
   flakeOverlays = [
     # office-fonts:基于 chinese-fonts-overlay 的字体集(含全部上游字体
@@ -25,4 +32,4 @@
     inputs.printer-drivers.overlays.default
   ];
 in
-  localOverlays ++ flakeOverlays
+  localOverlays ++ flakeOverlays ++ [gstarOverlay]

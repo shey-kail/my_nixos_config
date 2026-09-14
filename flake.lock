@@ -24,6 +24,22 @@
         "type": "github"
       }
     },
+    "cadsoft": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789373494,
+        "narHash": "sha256-UNoQj8tP8n5S4sAwEPyZQo1mOuoSE5Q8QSg5thhGbLM=",
+        "ref": "refs/heads/main",
+        "rev": "57784a1fec5a16db60cc564e3cead200ab2150e1",
+        "revCount": 1,
+        "type": "git",
+        "url": "https://gitee.com/shey_kail/cadsoft.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://gitee.com/shey_kail/cadsoft.git"
+      }
+    },
     "darwin": {
       "inputs": {
         "nixpkgs": [
@@ -451,6 +467,7 @@
     "root": {
       "inputs": {
         "agenix": "agenix",
+        "cadsoft": "cadsoft",
         "dms-plugin-registry": "dms-plugin-registry",
         "flake-utils": "flake-utils",
         "haumea": "haumea",

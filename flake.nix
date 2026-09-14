@@ -91,5 +91,11 @@
       url = "git+ssh://git@gitee.com/shey_kail/printer-drivers.git";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # 浩辰CAD 2027 安装包分片(469MB deb 拆 6 片,构建时 cat 合并)
+    cadsoft = {
+      url = "git+https://gitee.com/shey_kail/cadsoft.git";
+      flake = false;
+    };
   };
 }
