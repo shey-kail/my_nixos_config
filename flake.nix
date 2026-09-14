@@ -86,6 +86,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # AI 编码 agent 与开发工具集(numtide,每日自动更新,含 DeepSeek Harness dsh)
+    # 走 codeload 直链:github.com/archive 的 302 跳转在本机网络下会超时
+    llm-agents = {
+      url = "tarball+https://codeload.github.com/numtide/llm-agents.nix/tar.gz/8789d35418faa994adf0f46b2e76933cf41a5854";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # 打印机私有驱动(佳能 UFR II / 得力 GDI)
     printer-drivers = {
       url = "git+ssh://git@gitee.com/shey_kail/printer-drivers.git";

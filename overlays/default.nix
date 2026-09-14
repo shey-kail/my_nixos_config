@@ -30,6 +30,10 @@
 
     # printer-drivers:佳能 UFR II + 得力 GDI 私有打印驱动
     inputs.printer-drivers.overlays.default
+
+    # llm-agents:numtide 维护的 AI 编码 agent 工具集
+    # (DeepSeek Harness dsh / codex / opencode / claude-code 等,每日自动更新)
+    inputs.llm-agents.overlays.shared-nixpkgs
   ];
 in
   localOverlays ++ flakeOverlays ++ [gstarOverlay]
