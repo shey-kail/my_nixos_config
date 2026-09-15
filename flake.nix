@@ -104,5 +104,12 @@
       url = "git+https://gitee.com/shey_kail/cadsoft.git";
       flake = false;
     };
+
+    # OpenViking:agent 记忆/上下文数据库(火山开源),NixOS 打包
+    # 提供 services.openviking(systemd 服务) + pkgs.openviking / ov-cli
+    openviking = {
+      url = "github:Daaboulex/openviking-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 }

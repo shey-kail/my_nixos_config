@@ -32,8 +32,13 @@
   };
 
   modules = {
-    nixos-modules = [ ] ++ base-modules.nixos-modules;
-    home-modules = [ ] ++ base-modules.home-modules;
+    nixos-modules =
+      [
+        # OpenViking:agent 记忆/上下文数据库(systemd 服务 + services.openviking 选项)
+        inputs.openviking.nixosModules.default
+      ]
+      ++ base-modules.nixos-modules;
+    home-modules = [] ++ base-modules.home-modules;
   };
 in {
   nixosConfigurations = {

@@ -6,7 +6,25 @@ in {
     ./hardware-configuration.nix
     # Include tailscale and sunshine.
     ./remote-desktop/default.nix
+    # OpenViking 的 nixosModule 在 outputs/x86_64-linux/src/wujie.nix 里 import
+    # (那里有 haumea 注入的 inputs;模块内引用 inputs 会导致 infinite recursion)
   ];
+
+  # OpenViking 服务:本地 127.0.0.1:1933,数据放 /var/lib/openviking
+  # 说明:
+  #   - 用 shey 用户跑,方便索引 ~/Codes 下的仓库(默认 openviking 用户受 ProtectHome 限制)
+  #   - embedding / VLM 端点稍后通过 settings 或 configFile 补(viking 需要两个模型服务)
+  services.openviking = {
+    enable = true;
+    user = "shey";
+    group = "users";
+    port = 1933;
+    host = "127.0.0.1";
+    dataDir = "/var/lib/openviking";
+    readOnlyPaths = [
+      "/home/shey/Codes"
+    ];
+  };
 
   networking = {
     inherit hostName;

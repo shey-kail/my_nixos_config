@@ -34,6 +34,9 @@
     # llm-agents:numtide 维护的 AI 编码 agent 工具集
     # (DeepSeek Harness dsh / codex / opencode / claude-code 等,每日自动更新)
     inputs.llm-agents.overlays.shared-nixpkgs
+
+    # openviking:agent 记忆/上下文数据库(提供 pkgs.openviking / ov-cli)
+    inputs.openviking.overlays.default
   ];
 in
   localOverlays ++ flakeOverlays ++ [gstarOverlay]
