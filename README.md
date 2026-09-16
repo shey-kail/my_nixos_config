@@ -223,6 +223,7 @@ overlays/overlay/all-packages.nix (再扫一遍 pkgs/ 走 callPackage)
 | 用户级 GUI                   | `home/linux/gui/base/`                                                          |
 | KDE Plasma                   | `modules/nixos/desktop/kde/` + `home/linux/gui/base/plasma6/`                   |
 | KDE 桌面主题 / Win11 外观     | `home/linux/gui/base/plasma6/themes/`(数据主题)+ `dotfiles_writable/`(~/.config 快照)+ `default.nix` 的 `ensure*` rsync 段 |
+| KVM 虚拟机(win10)            | `modules/nixos/base/virtualisation.nix`(固件自动修复 + vm-backup + vm-restore) |
 | sing-box 订阅/模板           | `modules/nixos/base/singbox/singbox.nix` + `singbox-templates/`                 |
 | dae 流量规则                 | `modules/nixos/base/dae/dae.nix` + `config.dae`                                 |
 | netflow 客户端               | `modules/nixos/base/netflow/default.nix` → `pkgs/netflow/`                      |
@@ -243,7 +244,107 @@ overlays/overlay/all-packages.nix (再扫一遍 pkgs/ 走 callPackage)
 
 ---
 
-## 十四、常用命令
+## 十四、KVM 虚拟机(win10)备份与还原
+
+本机唯一 KVM 虚拟机是 `win10`(UEFI + Secure Boot 关闭 + virtiofs 共享 `linux` 文件夹)。
+
+### 背景:为什么 NixOS 更新会弄坏 VM
+
+NixOS 每次 `nixos-rebuild` 后,QEMU/OVMF 固件在 nix store 里的路径会变
+(`/nix/store/<hash>-qemu-*/share/qemu/edk2-*.fd`)。如果 VM 的 XML 里写死了
+这种带 hash 的路径,rebuild 后旧路径被 GC 删除 → libvirt 报"不支持 EFI"。
+
+**解决办法已在模块里固化**:
+
+| systemd 服务 | 作用 | 触发 |
+|---|---|---|
+| `libvirt-fix-efi-firmware` | 把 XML 里 nix store 固件路径统一切到稳定路径 `/run/libvirt/nix-ovmf/*` | 开机自动(幂等) |
+| `vm-backup` | 把 VM 文件(dqcow2 磁盘 + XML + NVRAM)rclone 同步到 123 云盘 WebDAV | **手动** |
+| `vm-restore` | VM 文件缺失时从 WebDAV 拉回并 `virsh define` | 开机自动(幂等) |
+| `rclone-webdav`(既有) | 自动挂载 123 云盘到 `~/Projects/webdav123` | 登录自动 |
+
+### 日常操作
+
+```bash
+# 备份前先关机(运行中的 qcow2 备份不一致)
+sudo virsh shutdown win10
+
+# 手动备份到云盘(123pan,明文,增量同步)
+sudo systemctl start vm-backup
+
+# 查看备份结果
+sudo systemctl status vm-backup
+rclone ls webdav_123:/webdav/wujie/vm-backup/images/
+
+# 启动 VM
+sudo virsh start win10
+```
+
+备份目标:`webdav_123:/webdav/wujie/vm-backup/`(123 云盘)
+备份内容:`images/win10.qcow2`(~10G)· `qemu/win10.xml` · `nvram/win10_VARS.fd`
+
+### 新设备重装后自动还原(正常流程)
+
+```bash
+git clone <本仓库> && cd nixos
+make rebuild     # 或 sudo nixos-rebuild switch --flake .#wujie
+```
+
+rebuild 完成后,下面三件事自动发生,不需要手工:
+
+1. `rclone-webdav` 挂载云盘(需登录桌面会话;若调 `systemctl --user start rclone-webdav` 可提前)
+2. `vm-restore` 检测到 `/var/lib/libvirt/images/win10.qcow2` 不存在 → 从云盘拉回
+   `qcow2 + XML + NVRAM`,并 `virsh define`
+3. `libvirt-fix-efi-firmware` 兜底修正固件路径
+
+等磁盘拉完(10G,看 `journalctl -u vm-restore -f`)后:
+
+```bash
+sudo virsh start win10
+```
+
+### 自动还原失败时的手动步骤
+
+如果 `vm-restore` 因网络/云盘故障没拉成,或想完全手动:
+
+```bash
+# 1. 挂载云盘(等价于 rclone-webdav 服务)
+rclone mount webdav_123:/webdav/ ~/Projects/webdav123 --vfs-cache-mode full &
+#   或直接对 remote 路径操作(不挂载):
+RCLONE_CONFIG=/home/shey/.config/rclone/rclone.conf
+
+# 2. 确认云盘上有备份
+rclone --config $RCLONE_CONFIG ls webdav_123:/webdav/wujie/vm-backup/
+
+# 3. 手动拉回文件
+sudo rclone --config $RCLONE_CONFIG copy \
+  webdav_123:/webdav/wujie/vm-backup/images/ /var/lib/libvirt/images/
+sudo rclone --config $RCLONE_CONFIG copy \
+  webdav_123:/webdav/wujie/vm-backup/qemu/ /var/lib/libvirt/qemu/
+sudo mkdir -p /var/lib/libvirt/qemu/nvram
+sudo rclone --config $RCLONE_CONFIG copy \
+  webdav_123:/webdav/wujie/vm-backup/nvram/ /var/lib/libvirt/qemu/nvram/
+
+# 4. 重新定义域
+sudo virsh define /var/lib/libvirt/qemu/win10.xml
+
+# 5. 固件路径自动修复(或手动确认 loader 用的是稳定路径)
+sudo systemctl start libvirt-fix-efi-firmware
+
+# 6. 启动
+sudo virsh start win10
+```
+
+### 注意事项
+
+- 备份是**明文**(未加密),云盘账号即备份安全性,请保管好 123pan 凭据
+- 云盘容量充足(1.0P),10G 的 qcow2 不是问题
+- VM 运行时不要备份(会得到不一致快照)
+- 新增第二台 VM:在 `virtualisation.nix` 的 `vm-restore` 里把磁盘名加进 `RESTORE_DISKS`,并在 `vm-backup` 里补对应 copy 行
+
+---
+
+## 十五、常用命令
 
 通过根目录 `Makefile` 暴露(默认主机 `wujie`):
 
@@ -272,7 +373,7 @@ nix eval .#evalTests --show-trace --print-build-logs --verbose
 
 ---
 
-## 十五、参考
+## 十六、参考
 
 其他 dotfiles 仓库对本项目的影响:
 
