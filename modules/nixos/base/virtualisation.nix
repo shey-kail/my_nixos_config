@@ -1,8 +1,4 @@
-{
-  pkgs,
-  ...
-}:
-{
+{pkgs, ...}: {
   ###################################################################################
   #
   #  Virtualisation - Libvirt(QEMU/KVM) / Docker / LXD / WayDroid
@@ -25,7 +21,7 @@
     "kvm-amd"
   ];
 
-  users.extraGroups.libvirtd.members = [ "shey" ];
+  users.extraGroups.libvirtd.members = ["shey"];
 
   virtualisation = {
     # Usage: https://wiki.nixos.org/wiki/Waydroid
@@ -36,14 +32,14 @@
       # hanging this option to false may cause file permission issues for existing guests.
       # To fix these, manually change ownership of affected files in /var/lib/libvirt/qemu to qemu-libvirtd.
       qemu.runAsRoot = true;
-      qemu.vhostUserPackages = with pkgs; [ virtiofsd ];
+      qemu.vhostUserPackages = with pkgs; [virtiofsd];
     };
     spiceUSBRedirection.enable = true;
 
     # lxd.enable = true;
   };
   # To enable UEFI firmware support in Virt-Manager, Libvirt, Gnome-Boxes etc. add following snippet to your system configuration and apply it
-  systemd.tmpfiles.rules = [ "L+ /var/lib/qemu/firmware - - - - ${pkgs.qemu}/share/qemu/firmware" ];
+  systemd.tmpfiles.rules = ["L+ /var/lib/qemu/firmware - - - - ${pkgs.qemu}/share/qemu/firmware"];
 
   # can be used to manage non-local hosts as well
   programs.virt-manager.enable = true;
@@ -52,9 +48,9 @@
   # net-autostart 幂等持久化 autostart;net-start 确保当前已运行(已运行则报错,忽略)。
   systemd.services.libvirt-net-default = {
     description = "Start libvirt default network";
-    after = [ "libvirtd.service" ];
-    wants = [ "libvirtd.service" ];
-    wantedBy = [ "multi-user.target" ];
+    after = ["libvirtd.service"];
+    wants = ["libvirtd.service"];
+    wantedBy = ["multi-user.target"];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
@@ -62,6 +58,43 @@
     script = ''
       ${pkgs.libvirt}/bin/virsh net-autostart default || true
       ${pkgs.libvirt}/bin/virsh net-start default || true
+    '';
+  };
+
+  # 修复 QEMU 固件路径:每次 rebuild 后 nix store 里的 OVMF 固件路径会变,
+  # 而 VM XML 里写死的 /nix/store/<hash>-qemu-*/share/qemu/edk2-*.fd 会被 GC 删除,
+  # 导致 EFI 启动失败("不支持 EFI")。
+  # 这里把 loader / nvram 模板统一改为 libvirt 稳定路径 /run/libvirt/nix-ovmf/
+  # (NixOS 每次启动自动把最新固件 symlink 到这里)。
+  systemd.services.libvirt-fix-efi-firmware = {
+    description = "Rewrite VM domain definitions to use stable OVMF paths";
+    after = ["libvirtd.service"];
+    wants = ["libvirtd.service"];
+    wantedBy = ["multi-user.target"];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      set -eu
+      for xml in /var/lib/libvirt/qemu/*.xml; do
+        [ -f "$xml" ] || continue
+        name="$(basename "$xml" .xml)"
+        # 域名不存在则跳过(避免误伤占位文件)
+        ${pkgs.libvirt}/bin/virsh dominfo "$name" >/dev/null 2>&1 || continue
+
+        # 把 write 死的 nix store 固件路径替换成稳定路径
+        if grep -qE '/nix/store/[^/]+/share/qemu/edk2-(x86_64|i386)[-a-z0-9]*\.fd' "$xml"; then
+          echo "fixing firmware paths for domain '$name'"
+          sed -i \
+            -e 's|/nix/store/[^/]*/share/qemu/edk2-x86_64-secure-code\.fd|/run/libvirt/nix-ovmf/edk2-x86_64-code.fd|g' \
+            -e 's|/nix/store/[^/]*/share/qemu/edk2-x86_64-code\.fd|/run/libvirt/nix-ovmf/edk2-x86_64-code.fd|g' \
+            -e 's|/nix/store/[^/]*/share/qemu/edk2-i386-vars\.fd|/run/libvirt/nix-ovmf/edk2-i386-vars.fd|g' \
+            "$xml"
+          # 重新加载域定义(保证 nvram 路径也被 libvirt 接受)
+          ${pkgs.libvirt}/bin/virsh define "$xml" || true
+        fi
+      done
     '';
   };
 
@@ -100,6 +133,5 @@
     #   qemu-system-xtensa qemu-xtensa qemu-system-xtensaeb qemu-xtensaeb
     #   ......
     qemu
-
   ];
 }
