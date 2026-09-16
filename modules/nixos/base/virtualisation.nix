@@ -109,6 +109,47 @@
     };
   };
 
+  # KVM 虚拟机备份(手动触发):rclone copy 到 123 云盘 WebDAV
+  #
+  #   sudo systemctl start vm-backup        # 执行备份
+  #   sudo systemctl status vm-backup       # 看结果
+  #   journalctl -u vm-backup -f            # 日志
+  #
+  # 备份内容(明文,rclone copy 增量同步):
+  #   - /var/lib/libvirt/images/win10.qcow2      VM 磁盘(~10G)
+  #   - /var/lib/libvirt/qemu/win10.xml          VM 定义(固件已修稳定路径)
+  #   - /var/lib/libvirt/qemu/nvram/win10_VARS.fd EFI 变量
+  # 目标:webdav_123:/webdav/wujie/vm-backup/
+  # 说明:
+  #   - 复用用户 rclone 配置(--config 指定),不复制配置
+  #   - VM 在运行时会复制到不一致状态;备份前建议 virsh shutdown win10
+  systemd.services.vm-backup = {
+    description = "Backup KVM VMs (rclone copy to WebDAV)";
+    serviceConfig = {
+      Type = "oneshot";
+      # rclone 传大文件可能很慢;给足时间(默认无限制)
+      TimeoutStartSec = 0;
+    };
+    script = ''
+      set -eu
+      RCLONE=${pkgs.rclone}/bin/rclone
+      # 用户 rclone 配置路径(含 webdav_123 remote)
+      RCLONE_CONFIG=/home/shey/.config/rclone/rclone.conf
+      DEST=webdav_123:/webdav/wujie/vm-backup
+
+      # 逐个备份 VM 相关文件(目录结构还原:images/ qemu/ nvram/)
+      $RCLONE copy --config "$RCLONE_CONFIG" \
+        /var/lib/libvirt/images/win10.qcow2 "${DEST}/images/" --verbose 2>&1
+      $RCLONE copy --config "$RCLONE_CONFIG" \
+        /var/lib/libvirt/qemu/win10.xml "${DEST}/qemu/" 2>&1
+      $RCLONE copy --config "$RCLONE_CONFIG" \
+        /var/lib/libvirt/qemu/nvram/win10_VARS.fd "${DEST}/nvram/" 2>&1
+
+      echo "=== VM backup finished ==="
+      $RCLONE --config "$RCLONE_CONFIG" lsjson "${DEST}" 2>/dev/null || true
+    '';
+  };
+
   environment.systemPackages = with pkgs; [
     # This script is used to install the arm translation layer for waydroid
     # so that we can install arm apks on x86_64 waydroid
