@@ -139,14 +139,72 @@
 
       # 逐个备份 VM 相关文件(目录结构还原:images/ qemu/ nvram/)
       $RCLONE copy --config "$RCLONE_CONFIG" \
-        /var/lib/libvirt/images/win10.qcow2 "${DEST}/images/" --verbose 2>&1
+        /var/lib/libvirt/images/win10.qcow2 "\${DEST}/images/" --verbose 2>&1
       $RCLONE copy --config "$RCLONE_CONFIG" \
-        /var/lib/libvirt/qemu/win10.xml "${DEST}/qemu/" 2>&1
+        /var/lib/libvirt/qemu/win10.xml "\${DEST}/qemu/" 2>&1
       $RCLONE copy --config "$RCLONE_CONFIG" \
-        /var/lib/libvirt/qemu/nvram/win10_VARS.fd "${DEST}/nvram/" 2>&1
+        /var/lib/libvirt/qemu/nvram/win10_VARS.fd "\${DEST}/nvram/" 2>&1
 
       echo "=== VM backup finished ==="
-      $RCLONE --config "$RCLONE_CONFIG" lsjson "${DEST}" 2>/dev/null || true
+      $RCLONE --config "$RCLONE_CONFIG" lsjson "\${DEST}" 2>/dev/null || true
+    '';
+  };
+
+  # 新设备/重装后自动还原 KVM VM:VM 文件缺失时从 WebDAV 拉回(幂等,已存在则跳过)
+  #
+  # 工作方式:
+  #   - 开机(多用户)自动执行,after network-online + libvirtd
+  #   - 检测 /var/lib/libvirt/images/win10.qcow2 是否存在
+  #     · 不存在 → 从 webdav_123:/webdav/wujie/vm-backup/ 拉回 images/ qemu/ nvram/,virsh define
+  #     · 已存在 → 跳过(避免覆盖已有/正在用的 VM)
+  #   - 手动执行: sudo systemctl start vm-restore
+  systemd.services.vm-restore = {
+    description = "Restore KVM VMs from WebDAV when missing (idempotent)";
+    after = ["network-online.target" "libvirtd.service"];
+    wants = ["network-online.target" "libvirtd.service"];
+    wantedBy = ["multi-user.target"];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      TimeoutStartSec = 0;
+    };
+    script = ''
+      set -eu
+      RCLONE=${pkgs.rclone}/bin/rclone
+      RCLONE_CONFIG=/home/shey/.config/rclone/rclone.conf
+      SRC=webdav_123:/webdav/wujie/vm-backup
+
+      # 已备份的 VM 磁盘文件名(将来新增 VM 时在这里补)
+      RESTORE_DISKS="win10.qcow2"
+
+      for disk in $RESTORE_DISKS; do
+        if [ -f "/var/lib/libvirt/images/$disk" ]; then
+          echo "disk /var/lib/libvirt/images/$disk already exists, skip restore."
+          continue
+        fi
+
+        echo "=== restoring $disk from WebDAV ==="
+        # 磁盘
+        $RCLONE copy --config "$RCLONE_CONFIG" "\${SRC}/images/" /var/lib/libvirt/images/ \
+          --include "$disk" --verbose 2>&1 || echo "WARN: disk restore failed"
+
+        # VM 定义 + EFI 变量(如果云盘上有对应文件,按 qcow2 基名关联)
+        base="''${disk%.qcow2}"
+        if $RCLONE --config "$RCLONE_CONFIG" lsjson "\${SRC}/qemu/" 2>/dev/null | grep -q "$base"; then
+          $RCLONE copy --config "$RCLONE_CONFIG" "\${SRC}/qemu/" /var/lib/libvirt/qemu/ \
+            --include "''${base}.xml" 2>&1 || true
+        fi
+        if $RCLONE --config "$RCLONE_CONFIG" lsjson "\${SRC}/nvram/" 2>/dev/null | grep -q "$base"; then
+          mkdir -p /var/lib/libvirt/qemu/nvram
+          $RCLONE copy --config "$RCLONE_CONFIG" "\${SRC}/nvram/" /var/lib/libvirt/qemu/nvram/ \
+            --include "''${base}_VARS.fd" 2>&1 || true
+        fi
+
+        # 重新定义域(libvirt 读回 XML)
+        if [ -f "/var/lib/libvirt/qemu/''${base}.xml" ]; then
+          ${pkgs.libvirt}/bin/virsh define "/var/lib/libvirt/qemu/''${base}.xml" || true
+        fi
+      done
     '';
   };
 
