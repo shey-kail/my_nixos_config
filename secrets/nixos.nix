@@ -5,8 +5,7 @@
   mysecrets,
   myvars,
   ...
-}:
-let
+}: let
   high_security = {
     mode = "0600";
     owner = "root";
@@ -19,102 +18,114 @@ let
     mode = "0600";
     owner = myvars.username;
   };
-in
-{
+in {
   imports = [
     agenix.nixosModules.default
   ];
 
   config = {
-      environment.systemPackages = [
-        agenix.packages."${pkgs.stdenv.hostPlatform.system}".default
-      ];
+    environment.systemPackages = [
+      agenix.packages."${pkgs.stdenv.hostPlatform.system}".default
+    ];
 
-      # 如果实在不行，在这个里面写上recovery的路径
-      age.identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" "/home/${myvars.username}/.ssh/id_rsa" ];
+    # 如果实在不行，在这个里面写上recovery的路径
+    age.identityPaths = ["/etc/ssh/ssh_host_ed25519_key" "/home/${myvars.username}/.ssh/id_rsa"];
 
-      # secrets that are used by all nixos hosts
-      age.secrets = {
-        # ---------------------------------------------
-        # only root can read this file.
-        # ---------------------------------------------
-        "wujie_private" = {
+    # secrets that are used by all nixos hosts
+    age.secrets = {
+      # ---------------------------------------------
+      # only root can read this file.
+      # ---------------------------------------------
+      "wujie_private" =
+        {
           file = "${mysecrets}/ssh/wujie_private/ssh_host_ed25519_key.age";
           path = "/etc/ssh/ssh_host_ed25519_key";
           symlink = false;
         }
         // high_security;
 
-        # ---------------------------------------------
-        # user can read this file.
-        # ---------------------------------------------
-        #        "qwen_oauth_creds" = {
-        #          file = "${mysecrets}/qwen/oauth_creds.json.age";
-        #          path = "/home/${myvars.username}/.qwen/oauth_creds.json";
-        #        }
-        #        // normal;
-        #
-        #        "qwen_installation_id" = {
-        #          file = "${mysecrets}/qwen/installation_id.age";
-        #          path = "/home/${myvars.username}/.qwen/installation_id";
-        #        }
-        #        // normal;
-        #
-        #        "gemini_oauth_creds" = {
-        #          file = "${mysecrets}/gemini/oauth_creds.json.age";
-        #          path = "/home/${myvars.username}/.gemini/oauth_creds.json";
-        #        }
-        #        // normal;
-        #
-        #        "gemini_installation_id" = {
-        #          file = "${mysecrets}/gemini/installation_id.age";
-        #          path = "/home/${myvars.username}/.gemini/installation_id";
-        #        }
-        #        // normal;
-        #
-        #        "gemini_google_accounts" = {
-        #          file = "${mysecrets}/gemini/google_accounts.json.age";
-        #          path = "/home/${myvars.username}/.gemini/google_accounts.json.age";
-        #         }
-        #         // normal;
-        "gemini_dotenv" = {
+      # ---------------------------------------------
+      # user can read this file.
+      # ---------------------------------------------
+      #        "qwen_oauth_creds" = {
+      #          file = "${mysecrets}/qwen/oauth_creds.json.age";
+      #          path = "/home/${myvars.username}/.qwen/oauth_creds.json";
+      #        }
+      #        // normal;
+      #
+      #        "qwen_installation_id" = {
+      #          file = "${mysecrets}/qwen/installation_id.age";
+      #          path = "/home/${myvars.username}/.qwen/installation_id";
+      #        }
+      #        // normal;
+      #
+      #        "gemini_oauth_creds" = {
+      #          file = "${mysecrets}/gemini/oauth_creds.json.age";
+      #          path = "/home/${myvars.username}/.gemini/oauth_creds.json";
+      #        }
+      #        // normal;
+      #
+      #        "gemini_installation_id" = {
+      #          file = "${mysecrets}/gemini/installation_id.age";
+      #          path = "/home/${myvars.username}/.gemini/installation_id";
+      #        }
+      #        // normal;
+      #
+      #        "gemini_google_accounts" = {
+      #          file = "${mysecrets}/gemini/google_accounts.json.age";
+      #          path = "/home/${myvars.username}/.gemini/google_accounts.json.age";
+      #         }
+      #         // normal;
+      "gemini_dotenv" =
+        {
           file = "${mysecrets}/gemini/dotenv.age";
           path = "/home/${myvars.username}/.gemini/.env";
           symlink = false;
         }
         // normal;
 
-        "shey_private" = {
+      "shey_private" =
+        {
           file = "${mysecrets}/ssh/shey_private/id_rsa.age";
           path = "/home/${myvars.username}/.ssh/id_rsa";
           symlink = false;
         }
         // user_readable;
 
-        "shey_rclone" = {
+      "shey_rclone" =
+        {
           file = "${mysecrets}/rclone/rclone.conf.age";
           path = "/home/${myvars.username}/.config/rclone/rclone.conf";
         }
         // user_readable;
 
-        "subscriptions_main" = {
+      "subscriptions_main" =
+        {
           file = "${mysecrets}/singbox/subscriptions_main.age";
         }
         // high_security;
 
-        "subscriptions_backup" = {
+      "subscriptions_backup" =
+        {
           file = "${mysecrets}/singbox/subscriptions_backup.age";
         }
         // high_security;
-      };
 
-      # place secrets in /etc/
-      environment.etc = {
-        "ssh/ssh_host_ed25519_key" = {
-          source = config.age.secrets."wujie_private".path;
-          mode = "0600";
-          user = "root";
-        };
+      # 豆包 embedding API key(OpenViking 向量检索用;normal 模式 = 用户可读)
+      "doubao_embedding_api" =
+        {
+          file = "${mysecrets}/APIs/Doubao-embedding-vision.age";
+        }
+        // normal;
+    };
+
+    # place secrets in /etc/
+    environment.etc = {
+      "ssh/ssh_host_ed25519_key" = {
+        source = config.age.secrets."wujie_private".path;
+        mode = "0600";
+        user = "root";
       };
     };
+  };
 }

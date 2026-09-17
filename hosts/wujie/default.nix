@@ -1,6 +1,30 @@
-{...}: let
-  hostName = "wujie"; # Define your hostname.
+{pkgs, ...}: let
+  # OpenViking ov.conf 模板(nix store 里,不含真 key;启动时 sed 替换占位符)
+  ovConfTemplate = pkgs.writeText "openviking-ov.conf" ''
+    {
+      "vlm": {
+        "provider": "volcengine",
+        "api_key": "__DOUBAO_API_KEY__",
+        "model": "doubao-seed-2-0-lite-260428",
+        "api_base": "https://ark.cn-beijing.volces.com/api/v3",
+        "temperature": 0.1,
+        "max_retries": 3
+      },
+      "embedding": {
+        "dense": {
+          "provider": "volcengine",
+          "api_key": "__DOUBAO_API_KEY__",
+          "model": "doubao-embedding-vision-251215",
+          "api_base": "https://ark.cn-beijing.volces.com/api/v3",
+          "dimension": 1024,
+          "input": "multimodal"
+        }
+      }
+    }
+  '';
 in {
+  hostName = "wujie"; # Define your hostname.
+
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
@@ -13,7 +37,7 @@ in {
   # OpenViking 服务:本地 127.0.0.1:1933,数据放 /var/lib/openviking
   # 说明:
   #   - 用 shey 用户跑,方便索引 ~/Codes 下的仓库(默认 openviking 用户受 ProtectHome 限制)
-  #   - embedding / VLM 端点稍后通过 settings 或 configFile 补(viking 需要两个模型服务)
+  #   - embedding / VLM 接火山方舟;API key 走 agenix(不落 nix store)
   services.openviking = {
     enable = true;
     user = "shey";
@@ -24,6 +48,29 @@ in {
     readOnlyPaths = [
       "/home/shey/Codes"
     ];
+    # settings 保持 null:ov.conf 由下方 systemd 动态生成
+    # (module 的 configFile=null 时,服务默认读 ${dataDir}/ov.conf)
+  };
+
+  # 在 openviking 启动前,用 agenix 解密好的 API key 生成 ov.conf
+  # (避免 key 明文进 nix store;运行时读 /run/agenix/doubao_embedding_api)
+  systemd.services.openviking-config = {
+    description = "Generate OpenViking ov.conf from agenix secrets";
+    before = ["openviking.service"];
+    requiredBy = ["openviking.service"];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      set -eu
+      KEY="$(cat /run/agenix/doubao_embedding_api)"
+      mkdir -p /var/lib/openviking
+      # 用 nix 生成的 JSON 模板(不含 key),运行时把占位符替换为 agenix key
+      sed "s|__DOUBAO_API_KEY__|$KEY|g" ${ovConfTemplate} > /var/lib/openviking/ov.conf
+      chown shey:users /var/lib/openviking/ov.conf
+      chmod 600 /var/lib/openviking/ov.conf
+    '';
   };
 
   networking = {
