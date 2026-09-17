@@ -139,14 +139,14 @@
 
       # 逐个备份 VM 相关文件(目录结构还原:images/ qemu/ nvram/)
       $RCLONE copy --config "$RCLONE_CONFIG" \
-        /var/lib/libvirt/images/win10.qcow2 "\${DEST}/images/" --verbose 2>&1
+        /var/lib/libvirt/images/win10.qcow2 "''${DEST}/images/" --verbose 2>&1
       $RCLONE copy --config "$RCLONE_CONFIG" \
-        /var/lib/libvirt/qemu/win10.xml "\${DEST}/qemu/" 2>&1
+        /var/lib/libvirt/qemu/win10.xml "''${DEST}/qemu/" 2>&1
       $RCLONE copy --config "$RCLONE_CONFIG" \
-        /var/lib/libvirt/qemu/nvram/win10_VARS.fd "\${DEST}/nvram/" 2>&1
+        /var/lib/libvirt/qemu/nvram/win10_VARS.fd "''${DEST}/nvram/" 2>&1
 
       echo "=== VM backup finished ==="
-      $RCLONE --config "$RCLONE_CONFIG" lsjson "\${DEST}" 2>/dev/null || true
+      $RCLONE --config "$RCLONE_CONFIG" lsjson "''${DEST}" 2>/dev/null || true
     '';
   };
 
@@ -185,18 +185,18 @@
 
         echo "=== restoring $disk from WebDAV ==="
         # 磁盘
-        $RCLONE copy --config "$RCLONE_CONFIG" "\${SRC}/images/" /var/lib/libvirt/images/ \
+        $RCLONE copy --config "$RCLONE_CONFIG" "''${SRC}/images/" /var/lib/libvirt/images/ \
           --include "$disk" --verbose 2>&1 || echo "WARN: disk restore failed"
 
         # VM 定义 + EFI 变量(如果云盘上有对应文件,按 qcow2 基名关联)
         base="''${disk%.qcow2}"
-        if $RCLONE --config "$RCLONE_CONFIG" lsjson "\${SRC}/qemu/" 2>/dev/null | grep -q "$base"; then
-          $RCLONE copy --config "$RCLONE_CONFIG" "\${SRC}/qemu/" /var/lib/libvirt/qemu/ \
+        if $RCLONE --config "$RCLONE_CONFIG" lsjson "''${SRC}/qemu/" 2>/dev/null | grep -q "$base"; then
+          $RCLONE copy --config "$RCLONE_CONFIG" "''${SRC}/qemu/" /var/lib/libvirt/qemu/ \
             --include "''${base}.xml" 2>&1 || true
         fi
-        if $RCLONE --config "$RCLONE_CONFIG" lsjson "\${SRC}/nvram/" 2>/dev/null | grep -q "$base"; then
+        if $RCLONE --config "$RCLONE_CONFIG" lsjson "''${SRC}/nvram/" 2>/dev/null | grep -q "$base"; then
           mkdir -p /var/lib/libvirt/qemu/nvram
-          $RCLONE copy --config "$RCLONE_CONFIG" "\${SRC}/nvram/" /var/lib/libvirt/qemu/nvram/ \
+          $RCLONE copy --config "$RCLONE_CONFIG" "''${SRC}/nvram/" /var/lib/libvirt/qemu/nvram/ \
             --include "''${base}_VARS.fd" 2>&1 || true
         fi
 

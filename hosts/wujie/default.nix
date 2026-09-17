@@ -1,4 +1,5 @@
 {pkgs, ...}: let
+  hostName = "wujie"; # Define your hostname.
   # OpenViking ov.conf 模板(nix store 里,不含真 key;启动时 sed 替换占位符)
   ovConfTemplate = pkgs.writeText "openviking-ov.conf" ''
     {
@@ -23,8 +24,6 @@
     }
   '';
 in {
-  hostName = "wujie"; # Define your hostname.
-
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
