@@ -1,4 +1,8 @@
-{pkgs, ...}: let
+{
+  pkgs,
+  lib,
+  ...
+}: let
   hostName = "wujie"; # Define your hostname.
   # OpenViking ov.conf 模板(nix store 里,不含真 key;启动时 sed 替换占位符)
   ovConfTemplate = pkgs.writeText "openviking-ov.conf" ''
@@ -37,6 +41,14 @@ in {
   # 说明:
   #   - 用 shey 用户跑,方便索引 ~/Codes 下的仓库(默认 openviking 用户受 ProtectHome 限制)
   #   - embedding / VLM 接火山方舟;API key 走 agenix(不落 nix store)
+  #   - 模块 preStart 的 chown 在 CapabilityBoundingSet= 下会失败(无 CAP_CHOWN),
+  #     这里用 tmpfiles 预建目录+属主,并覆盖 ExecStartPre 绕过。
+  systemd.tmpfiles.rules = [
+    "d /var/lib/openviking 0755 shey users -"
+  ];
+  # 覆盖模块生成的 pre-start(chown 脚本),改为不做事(目录已由 tmpfiles 建好)
+  systemd.services.openviking.serviceConfig.ExecStartPre = lib.mkForce [];
+
   services.openviking = {
     enable = true;
     user = "shey";
