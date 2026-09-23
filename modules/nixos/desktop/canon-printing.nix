@@ -21,7 +21,7 @@ in {
   services.printing.drivers = [canon];
 
   # 主机制:switch 激活时立刻建软链
-  system.activationScripts.canonUfr2Bridge = lib.mkAfter ["usrbinenv"] ''
+  system.activationScripts.canonUfr2Bridge = ''
     mkdir -p /usr/bin /usr/share
     ln -sfn ${canon}/bin/cnrsdrvufr2 /usr/bin/cnrsdrvufr2
     ln -sfn ${canon}/share/caepcm /usr/share/caepcm
