@@ -4,9 +4,12 @@
 #   - rastertoufr2 滤镜内部 execv("/usr/bin/cnrsdrvufr2")
 #   - cnrsdrvufr2 读取 "/usr/share/caepcm"(色彩数据)与
 #     "/etc/cngplp2/options/options.conf"
-# 用 systemd.tmpfiles 把这些路径链到 store 里的驱动包,
-# 让 CUPS 跑滤镜时能找到渲染核心。打印主链路不再依赖
-# 认证/GTK 设置程序,是纯本地光栅->UFR II 转换。
+#
+# 两种机制覆盖:
+#   1) system.activationScripts:每次 nixos-rebuild switch 激活时以
+#      root 创建软链(NixOS 官方建 /usr/bin/env 的同款机制),立即生效;
+#   2) systemd.tmpfiles 普通 L 规则:开机时再兜底刷新(注意不能用 L!,
+#      L! 只在开机阶段执行,手动 systemd-tmpfiles --create 会忽略)。
 {
   pkgs,
   lib,
@@ -17,17 +20,21 @@ in {
   # 佳能 UFR II 驱动挂进 CUPS:PPD + 滤镜(rastertoufr2/pdftocpca)+ USB 后端
   services.printing.drivers = [canon];
 
-  # 兼容链接(开机时由 systemd-tmpfiles 创建,root 属主)
+  # 主机制:switch 激活时立刻建软链
+  system.activationScripts.canonUfr2Bridge = lib.mkAfter ["usrbinenv"] ''
+    mkdir -p /usr/bin /usr/share
+    ln -sfn ${canon}/bin/cnrsdrvufr2 /usr/bin/cnrsdrvufr2
+    ln -sfn ${canon}/share/caepcm /usr/share/caepcm
+    mkdir -p /etc/cngplp2/options /etc/cngplp2/account
+  '';
+
+  # 兜底:开机时也确保软链存在(普通 L,非 L!)
   systemd.tmpfiles.rules = [
-    # /usr 目录骨架
     "d /usr 0755 root root -"
     "d /usr/bin 0755 root root -"
     "d /usr/share 0755 root root -"
-    # 渲染核心:rastertoufr2 硬编码 execv 的路径
-    "L! /usr/bin/cnrsdrvufr2 - - - - ${canon}/bin/cnrsdrvufr2"
-    # 色彩管理数据:cnrsdrvufr2 运行时读取
-    "L! /usr/share/caepcm - - - - ${canon}/share/caepcm"
-    # 驱动选项目录(空即可,缺失也能跑)
+    "L /usr/bin/cnrsdrvufr2 - - - - ${canon}/bin/cnrsdrvufr2"
+    "L /usr/share/caepcm - - - - ${canon}/share/caepcm"
     "d /etc/cngplp2/options 0755 root root -"
     "d /etc/cngplp2/account 0755 root root -"
   ];
