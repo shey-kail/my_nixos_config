@@ -654,11 +654,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789378594,
-        "narHash": "sha256-BL8QICizuU/ICV3KitpCDD9rP3cO7wEoLsU05IuZbZQ=",
+        "lastModified": 1790162667,
+        "narHash": "sha256-SxgDQA+Tj11PjGdso8Mca0C6QoQ8KJMNuRdY02v/Ajc=",
         "ref": "refs/heads/main",
-        "rev": "940e747a0dd8639d467650ddeabf7fd9ac0462f8",
-        "revCount": 5,
+        "rev": "d31d2324f845d1303a49c1c80b5f582b53434434",
+        "revCount": 6,
         "type": "git",
         "url": "ssh://git@gitee.com/shey_kail/printer-drivers.git"
       },
