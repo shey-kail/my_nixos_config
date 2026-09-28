@@ -22,6 +22,15 @@
     gstar-cad = prev.callPackage ../pkgs/gstar-cad {src = gstarSrc;};
   };
 
+  # 山东通三件套:各自注入对应 deb 源(sdt-src 目录里的三个 deb)
+  sdtOverlay = final: prev: let
+    sdt = inputs.sdt-src;
+  in {
+    shandongtong = prev.callPackage ../pkgs/shandongtong {src = "${sdt}/shandongtong.deb";};
+    atrust = prev.callPackage ../pkgs/atrust {src = "${sdt}/atrust.deb";};
+    sdmeeting = prev.callPackage ../pkgs/sdmeeting {src = "${sdt}/sdmeeting.deb";};
+  };
+
   # 第三方 flake overlay:在这里集中登记
   flakeOverlays = [
     # office-fonts:基于 chinese-fonts-overlay 的字体集(含全部上游字体
@@ -39,4 +48,4 @@
     inputs.openviking.overlays.default
   ];
 in
-  localOverlays ++ flakeOverlays ++ [gstarOverlay]
+  localOverlays ++ flakeOverlays ++ [gstarOverlay sdtOverlay]

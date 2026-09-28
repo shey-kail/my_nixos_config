@@ -105,6 +105,14 @@
       flake = false;
     };
 
+    # 山东通三件套(主客户端 shandongtong / 安全接入 atrust / 视频会议 sdmeeting)
+    # 目录里放三个 UOS deb:shandongtong.deb / atrust.deb / sdmeeting.deb
+    # 先用本地路径输入;要远端复现可照 cadsoft 换成 gitee 分片仓库
+    sdt-src = {
+      url = "path:/home/shey/Codes/shandongtong-src";
+      flake = false;
+    };
+
     # OpenViking:agent 记忆/上下文数据库(火山开源),NixOS 打包
     # 提供 services.openviking(systemd 服务) + pkgs.openviking / ov-cli
     openviking = {

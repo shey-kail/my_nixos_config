@@ -685,7 +685,21 @@
         "openviking": "openviking",
         "plasma-manager": "plasma-manager",
         "pre-commit-hooks": "pre-commit-hooks",
-        "printer-drivers": "printer-drivers"
+        "printer-drivers": "printer-drivers",
+        "sdt-src": "sdt-src"
+      }
+    },
+    "sdt-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790563470,
+        "narHash": "sha256-Z7E2h1HqTsOUkFsv/keFuNe82qFN72R8V3I2c5Dzoa8=",
+        "path": "/home/shey/Codes/shandongtong-src",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/shey/Codes/shandongtong-src",
+        "type": "path"
       }
     },
     "std": {
