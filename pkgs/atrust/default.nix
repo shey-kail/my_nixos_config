@@ -162,6 +162,15 @@ in
       makeWrapper "$A/resources/shell/aTrustDaemon.sh" "$out/bin/aTrustDaemon" \
         --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath systemLibs}:$TRUSTLIBS"
 
+      # 守护进程入口:原厂 aTrustDaemon.sh 的两个问题 —— ARGS 里
+      # "--plugin-cmd" 本版本不识别、且末尾有个裸管道导致 $! 记错 PID。
+      # 这里直接以前台方式跑 agent(--plugin plugin-daemon),
+      # 由 systemd 的 Type=simple 直接跟踪进程。
+      makeWrapper "$A/resources/bin/aTrustAgent" "$out/bin/aTrustAgent" \
+        --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath systemLibs}:$TRUSTLIBS" \
+        --add-flags "--plugin" \
+        --add-flags "plugin-daemon"
+
       # 托盘 wrapper
       mkdir -p "$out/bin"
       makeWrapper "$A/aTrustTray" "$out/bin/aTrustTray" \
