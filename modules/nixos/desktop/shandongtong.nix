@@ -46,6 +46,20 @@ in {
     description = "Sangfor aTrust Daemon (山东通安全接入)";
     after = ["network.target"];
     wantedBy = ["multi-user.target"];
+    # agent 内部用 shell 调这些工具来识别当前登录用户/会话:
+    #   loginctl ... | awk ... | xargs loginctl show-session | grep ...
+    #   getent passwd | awk -F ':' ...
+    #   ps -eo pid,command | grep -w ...
+    # 缺了会报 "getent/awk: 未找到命令",影响它判断用户与建立隧道
+    path = with pkgs; [
+      gawk
+      glibc.bin # getent
+      procps # ps
+      coreutils
+      gnugrep
+      findutils
+      systemd # loginctl
+    ];
     serviceConfig = {
       Type = "simple";
       ExecStart = "${atrust}/bin/aTrustAgent";
