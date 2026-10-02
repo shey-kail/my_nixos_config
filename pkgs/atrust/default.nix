@@ -172,13 +172,22 @@ in
         --add-flags "plugin-daemon"
 
       # 托盘 wrapper
+      # 注意:托盘会**另起一个 Qt 托盘子进程**(aTrustTray2),
+      # 它需要 Qt 平台插件,否则 SIGABRT("Could not find the Qt platform
+      # plugin xcb in \"\"")。这里给出 nix qtbase 的平台插件目录,
+      # 并强制走 xcb(Wayland 会话下有 XWayland;X11 会话同样适用)。
+      QTPLUG=$(echo ${qt5.qtbase.bin}/lib/qt-*/plugins/platforms)
       mkdir -p "$out/bin"
       makeWrapper "$A/aTrustTray" "$out/bin/aTrustTray" \
         --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath systemLibs}:$TRUSTLIBS" \
+        --set QT_QPA_PLATFORM_PLUGIN_PATH "$QTPLUG" \
+        --set QT_QPA_PLATFORM "xcb" \
         --add-flags "--no-sandbox" \
         --add-flags "--disable-gpu"
       makeWrapper "$A/aTrustTray" "$out/bin/atrust" \
         --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath systemLibs}:$TRUSTLIBS" \
+        --set QT_QPA_PLATFORM_PLUGIN_PATH "$QTPLUG" \
+        --set QT_QPA_PLATFORM "xcb" \
         --add-flags "--no-sandbox" \
         --add-flags "--disable-gpu"
 
