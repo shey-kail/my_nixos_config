@@ -58,6 +58,8 @@
   nss,
   pango,
   zlib,
+  qt5,
+  systemd,
   # deb 文件路径(由 overlays 注入)
   src ? null,
 }: let
@@ -102,6 +104,8 @@
     nss
     pango
     zlib
+    qt5.qtbase
+    systemd
   ];
 in
   stdenvNoCC.mkDerivation {
@@ -148,19 +152,24 @@ in
       find "$A/resources/shell" -type f -name '*.sh' -print0 2>/dev/null \
         | xargs -0 -r sed -i 's|^#!/bin/bash|#!/usr/bin/env bash|'
 
+      # aTrust 自带库分散在多个子目录(resources/bin 44 个、uem/lib、uem/bin 等)。
+      # 注意顺序:系统库必须排在自带库"前面" —— 包里带的是 UOS 的旧 libstdc++,
+      # 若让它先命中,nix 的 Qt5/icu 会因缺 CXXABI_1.3.13+ 而加载失败。
+      TRUSTLIBS="$A:$A/resources/lib:$A/resources/bin:$A/uem/lib:$A/uem/bin:$A/resources/bin/plugin-daemon/aTrustDaemon"
+
       # 脚本直接运行 resources/bin/aTrustAgent 等二进制,需要库搜索路径。
       # 不侵入原厂脚本:另做一个 wrapper,systemd 服务指向它。
       makeWrapper "$A/resources/shell/aTrustDaemon.sh" "$out/bin/aTrustDaemon" \
-        --prefix LD_LIBRARY_PATH : "$A:$A/resources/lib:${lib.makeLibraryPath systemLibs}"
+        --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath systemLibs}:$TRUSTLIBS"
 
-      # 托盘 wrapper:托盘与隧道库依赖较多,统一注入
+      # 托盘 wrapper
       mkdir -p "$out/bin"
       makeWrapper "$A/aTrustTray" "$out/bin/aTrustTray" \
-        --prefix LD_LIBRARY_PATH : "$A:$A/resources/lib:${lib.makeLibraryPath systemLibs}" \
+        --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath systemLibs}:$TRUSTLIBS" \
         --add-flags "--no-sandbox" \
         --add-flags "--disable-gpu"
       makeWrapper "$A/aTrustTray" "$out/bin/atrust" \
-        --prefix LD_LIBRARY_PATH : "$A:$A/resources/lib:${lib.makeLibraryPath systemLibs}" \
+        --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath systemLibs}:$TRUSTLIBS" \
         --add-flags "--no-sandbox" \
         --add-flags "--disable-gpu"
 
