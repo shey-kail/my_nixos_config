@@ -60,6 +60,7 @@
   zlib,
   qt5,
   systemd,
+  bubblewrap,
   # deb 文件路径(由 overlays 注入)
   src ? null,
 }: let
@@ -171,25 +172,63 @@ in
         --add-flags "--plugin" \
         --add-flags "plugin-daemon"
 
-      # 托盘 wrapper
-      # 注意:托盘会**另起一个 Qt 托盘子进程**(aTrustTray2),
-      # 它需要 Qt 平台插件,否则 SIGABRT("Could not find the Qt platform
-      # plugin xcb in \"\"")。这里给出 nix qtbase 的平台插件目录,
-      # 并强制走 xcb(Wayland 会话下有 XWayland;X11 会话同样适用)。
+      # 托盘启动脚本
+      #
+      # 两件事:
+      #   1) Qt 平台插件:托盘会**另起一个 Qt 托盘子进程**(aTrustTray2),
+      #      它需要平台插件,否则 SIGABRT("Could not find the Qt platform
+      #      plugin xcb in \"\"")。给出 nix qtbase 的插件目录并强制 xcb
+      #      (Wayland 会话下有 XWayland;X11 会话同样适用)。
+      #   2) 伪造 /etc/os-release:官方只认 uos/kylin/ubuntu/neokylin,
+      #      nixos 会被当成未知发行版(Qt 托盘会打 "not support system os"
+      #      并跳过发行版专属集成)。用 bwrap 把假的 os-release 挂进去,
+      #      让应用以为跑在 Ubuntu 20.04 上(UOS v20 / Kylin V10 同源)。
+      #      bwrap 不可用时自动降级为直接启动。
+      mkdir -p "$out/share/atrust"
+      cat > "$out/share/atrust/os-release" <<'OSREL'
+NAME="Ubuntu"
+VERSION="20.04.6 LTS (Focal Fossa)"
+ID=ubuntu
+ID_LIKE=debian
+PRETTY_NAME="Ubuntu 20.04.6 LTS"
+VERSION_ID="20.04"
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+VERSION_CODENAME=focal
+UBUNTU_CODENAME=focal
+OSREL
+
       QTPLUG=$(echo ${qt5.qtbase.bin}/lib/qt-*/plugins/platforms)
       mkdir -p "$out/bin"
-      makeWrapper "$A/aTrustTray" "$out/bin/aTrustTray" \
-        --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath systemLibs}:$TRUSTLIBS" \
-        --set QT_QPA_PLATFORM_PLUGIN_PATH "$QTPLUG" \
-        --set QT_QPA_PLATFORM "xcb" \
-        --add-flags "--no-sandbox" \
-        --add-flags "--disable-gpu"
-      makeWrapper "$A/aTrustTray" "$out/bin/atrust" \
-        --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath systemLibs}:$TRUSTLIBS" \
-        --set QT_QPA_PLATFORM_PLUGIN_PATH "$QTPLUG" \
-        --set QT_QPA_PLATFORM "xcb" \
-        --add-flags "--no-sandbox" \
-        --add-flags "--disable-gpu"
+      write_tray_launcher() {
+        # 用引号 heredoc:里面的 shell 变量原样保留;
+        # 构建期要注入的值走 @占位符@,最后 sed 替换
+        cat > "$1" <<'LAUNCHER'
+#!/bin/bash
+# aTrust 托盘启动器(nix 打包生成)
+export LD_LIBRARY_PATH="@LIBS@''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export QT_QPA_PLATFORM_PLUGIN_PATH="@QTPLUG@"
+export QT_QPA_PLATFORM="xcb"
+APP="@APP@"
+FAKE="@FAKE@"
+BWRAP="@BWRAP@"
+if "$BWRAP" --dev-bind / / --ro-bind "$FAKE" /etc/os-release true 2>/dev/null; then
+  exec "$BWRAP" --dev-bind / / --ro-bind "$FAKE" /etc/os-release "$APP" --no-sandbox --disable-gpu "$@"
+fi
+exec "$APP" --no-sandbox --disable-gpu "$@"
+LAUNCHER
+        sed -i \
+          -e "s|@LIBS@|${lib.makeLibraryPath systemLibs}:$TRUSTLIBS|" \
+          -e "s|@QTPLUG@|$QTPLUG|" \
+          -e "s|@APP@|$A/aTrustTray|" \
+          -e "s|@FAKE@|$out/share/atrust/os-release|" \
+          -e "s|@BWRAP@|${bubblewrap}/bin/bwrap|" \
+          "$1"
+        chmod +x "$1"
+      }
+      write_tray_launcher "$out/bin/aTrustTray"
+      write_tray_launcher "$out/bin/atrust"
 
       # desktop 入口
       mkdir -p "$out/share/applications"
