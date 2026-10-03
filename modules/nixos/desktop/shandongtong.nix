@@ -71,4 +71,32 @@ in {
       PrivateTmp = false;
     };
   };
+
+  # 核心服务(plugins/aTrustCore):托盘要连它,连不上就报"核心服务未启动"。
+  # 原厂由托盘自行拉起,但普通用户进程锁不上 root 建的 lockfile
+  # (见 pkgs/atrust 内注释:lock file lock fail → Master instance already
+  # running → 499 次失败)。这里用 systemd 以 root 常驻启动,托盘检测到
+  # 它已在运行后会直接连接。
+  systemd.services.aTrustCore = {
+    description = "Sangfor aTrust Core service (山东通安全接入核心服务)";
+    after = ["aTrustDaemon.service" "network.target"];
+    requires = ["aTrustDaemon.service"];
+    wantedBy = ["multi-user.target"];
+    path = with pkgs; [
+      gawk
+      glibc.bin
+      procps
+      coreutils
+      gnugrep
+      findutils
+      systemd
+    ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "${atrust}/bin/aTrustAgentCore";
+      Restart = "on-failure";
+      RestartSec = "5s";
+      PrivateTmp = false;
+    };
+  };
 }

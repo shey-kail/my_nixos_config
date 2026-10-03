@@ -172,6 +172,19 @@ in
         --add-flags "--plugin" \
         --add-flags "plugin-daemon"
 
+      # 核心服务入口:托盘只启动 --plugin plugin-daemon,但托盘自己需要连
+      # "plugins/aTrustCore/thrift"(核心服务)。在 UOS 上由托盘去拉起,
+      # 但 NixOS 上托盘(spawn 出来的是普通用户进程)锁不上 root 建的
+      # lockfile → "lock file lock fail / Master instance already running"
+      # → 核心服务永远起不来(日志里失败 499 次),托盘于是报"核心服务未启动"。
+      # 这里提供入口,由 systemd 以 root 常驻启动(参数取自托盘自己的拉起命令)。
+      makeWrapper "$A/resources/bin/aTrustAgent" "$out/bin/aTrustAgentCore" \
+        --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath systemLibs}:$TRUSTLIBS" \
+        --add-flags "--plugin" \
+        --add-flags "plugins/aTrustCore" \
+        --add-flags "--enable-http" \
+        --add-flags "--enable-event-center"
+
       # 托盘启动脚本
       #
       # 两件事:
