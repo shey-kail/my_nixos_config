@@ -1,27 +1,33 @@
 { config, pkgs, lib, ... }:
 let
   daeConfig = ./config.dae;
+  daeBin = lib.getExe pkgs.dae;
 
   # ------------------------------------------------------------------
   # dae 原生订阅
   #
   # 主/副订阅的 URL 仍由 agenix 加密保管(不落 git),由下面这个 oneshot
-  # 服务拉取后落盘成 dae 可读的 file:// 订阅文件;config.dae 里再用
-  # subtag(main_sub)/subtag(backup_sub) 按来源区分优先级。
+  # 服务拉取后写进 dae 的"配置目录"。
   #
-  # 这样做的原因:sing-box 的两个服务原本用 conflicts 互斥,只能跑其一,
-  # 无法实现"主订阅优先 + 副订阅兜底";dae 原生订阅可让两者同时进节点池。
+  # 为什么必须同目录(读源码确认):
+  #   cmd/run_controlplane.go 用 filepath.Dir(cfgFile) 作为 configDir,
+  #   common/subscription.ResolveFile 做 filepath.Join(configDir, ...)
+  #   并调用 common.EnsureFileInSubDir 校验"订阅文件必须在 configDir 内",
+  #   否则报 "file is out of scope"。
+  # 又因为 nixpkgs 的 dae 模块默认用 LoadCredential 把配置放到
+  # /run/credentials/dae.service/,那个目录每次启动重建、无法持久放订阅,
+  # 所以这里改为使用真实路径 /etc/dae(configDir 即 /etc/dae)。
   # ------------------------------------------------------------------
-  subDir = "/var/lib/dae";
-  mainSubFile = "${subDir}/main.sub";
-  backupSubFile = "${subDir}/backup.sub";
+  cfgDir = "/etc/dae";
+  mainSubFile = "${cfgDir}/main.sub";
+  backupSubFile = "${cfgDir}/backup.sub";
 
   mainSecret = config.age.secrets.subscriptions_main.path;
   backupSecret = config.age.secrets.subscriptions_backup.path;
 
   fetchScript = pkgs.writeShellScript "dae-sub-update" ''
     set -uo pipefail
-    mkdir -p ${subDir}
+    mkdir -p ${cfgDir}
 
     fetch() {
       local secret="$1" out="$2" name="$3" url
@@ -67,9 +73,12 @@ in {
     configFile = daeConfig;
   };
 
-  # 订阅文件目录(root 可读写即可)
+  # 配置落到真实路径 /etc/dae/config.dae(内容不含密钥,可安全放 store)
+  environment.etc."dae/config.dae".source = daeConfig;
+
+  # 配置目录 + 订阅文件占位
   systemd.tmpfiles.rules = [
-    "d ${subDir} 0700 root root -"
+    "d ${cfgDir} 0700 root root -"
   ];
 
   # 订阅拉取(oneshot;不设 wantedBy,由 dae 启动前按需拉起)
@@ -110,9 +119,18 @@ in {
     after = [ "singbox.service" "singbox-backup.service" "dae-sub-update.service" ];
     wants = [ "singbox.service" "singbox-backup.service" "dae-sub-update.service" ];
     serviceConfig = {
-      # 启动前保证订阅文件存在(nixpkgs 模块已用 ExecStartPre 做配置校验,
-      # 这里追加一条;开头的 "" 是 NixOS systemd 模块的列表重置约定)
-      ExecStartPre = lib.mkAfter [ "${ensureSubsScript}" ];
+      # 不用 LoadCredential,直接用 /etc/dae/config.dae —— 这样 configDir 就是
+      # /etc/dae,file:// 订阅(须与配置同目录)才能解析
+      LoadCredential = lib.mkForce [ ];
+      ExecStartPre = lib.mkForce [
+        ""
+        "${daeBin} validate -c ${cfgDir}/config.dae"
+        "${ensureSubsScript}"
+      ];
+      ExecStart = lib.mkForce [
+        ""
+        "${daeBin} run --disable-timestamp -c ${cfgDir}/config.dae"
+      ];
     };
   };
 }

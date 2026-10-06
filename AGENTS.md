@@ -77,6 +77,7 @@ secrets/nixos.nix        # agenix secret 定义(指向 mysecrets 输入中的 .a
 - **specialArgs 注入**:`outputs/default.nix` 的 `genSpecialArgs` 把 `mylib`、`myvars`、`pkgs-unstable`、`pkgs-stable`、`overlays` 注入所有模块,模块参数中可直接使用。
 - **overlays**:`overlays/default.nix` 扫描 `overlays/overlay/*.nix`,与 NUR overlay 合并;`overlays/overlay/all-packages.nix` 进一步扫描 `pkgs/` 下的自定义包并 `callPackage`。
 - **代理服务依赖链**:`dae` 监听 `singbox.service` / `singbox-backup.service` 之后启动;`singbox` 通过 systemd timer 每 12 小时从订阅 URL 拉取配置(订阅密钥在 `secrets/nixos.nix` 中由 agenix 管理)。
+- **节点选择已迁移到 dae**:`dae` 用原生 `subscription{}` 同时吃主/副订阅(`dae-sub-update.service` 从 agenix 密钥拉取后写入 `/etc/dae/{main,backup}.sub`,因为 dae 要求 `file://` 订阅必须与配置同目录),在 group 里用 `subtag()` + `name(regex:)` + `add_latency` 分层实现优先级(主订阅 > 副订阅、1x > 高倍率、新加坡 > 港澳台 > 日韩 > 欧美;AI 出口排除港澳台)。sing-box 退化为节点池里的兜底节点。
 - **预提交钩子**:`outputs/default.nix` 的 `checks.pre-commit-check` 启用 alejandra(Nix 格式化)、typos(拼写)、prettier。其他 deadnix/statix 已注释但工具已在 devShell 中。
 
 ### 重要约定

@@ -23,10 +23,13 @@ global {
 
 # ============================================================
 # 订阅：由 dae-sub-update.service 从 agenix 密钥拉取后写入
+# 注意：dae 要求 file:// 订阅必须**位于配置文件所在目录内**
+#       (源码 ResolveFile/EnsureFileInSubDir),所以这里用相对路径,
+#       实际文件是 /etc/dae/main.sub 与 /etc/dae/backup.sub
 # ============================================================
 subscription {
-    main_sub: 'file:///var/lib/dae/main.sub'
-    backup_sub: 'file:///var/lib/dae/backup.sub'
+    main_sub: 'file://./main.sub'
+    backup_sub: 'file://./backup.sub'
 }
 
 node {
