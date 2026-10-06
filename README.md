@@ -87,7 +87,7 @@ scanPaths = path:
 
 | 路径                           | 扫出的内容                                                                                                                       |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| `modules/nixos/base/`          | core / nix / networking / ssh / packages / user-group / i18n / zram / fcitx5 / virtualisation + 子目录 `singbox / dae / netflow` |
+| `modules/nixos/base/`          | core / nix / networking / ssh / packages / user-group / i18n / zram / fcitx5 / virtualisation + 子目录 `dae / netflow` |
 | `modules/nixos/desktop/`       | kde / flatpak / fhs / fonts / peripherals / security / packages                                                                  |
 | `home/base/{core, tui, gui}/`  | 跨平台 home 配置                                                                                                                 |
 | `home/linux/{base, gui/base}/` | Linux 专用 home 配置                                                                                                             |
@@ -108,7 +108,7 @@ scanPaths = path:
    services.netflow.enable = true;
    services.netflow-ui.enable = true;
    ```
-   (singbox / singbox-backup 在 `modules/nixos/base/singbox/singbox.nix` 里**硬编码** `wantedBy=multi-user.target`,默认启用)
+   (dae 与其订阅更新服务默认都**不自动启动**,见 `hosts/wujie/default.nix` 顶部注释)
 4. `system.stateVersion = "24.11"`
 
 `hosts/wujie/home.nix`:仅配置 `programs.ssh`(`enableDefaultConfig = false` + `identitiesOnly = true`)。
@@ -121,21 +121,19 @@ scanPaths = path:
 
 ---
 
-## 六、代理服务依赖链
+## 六、代理服务(已合并到 dae)
 
 ```
-   ┌─ singbox.service       (systemd, modules/nixos/base/singbox/singbox.nix)
-   ├─ singbox-backup.service
-   ├─ netflow.service       (pkgs/netflow/module.nix)
-   └─ netflow-ui.service    (pkgs/netflow/ui-module.nix)
+   ┌─ dae-sub-update.service   (从 agenix 密钥拉取主/副订阅 → /etc/dae/*.sub)
+   └─ netflow.service / netflow-ui.service
                        │
-               dae.service (after + wants 上面三个)
+               dae.service (after + wants 以上;自己选节点 + DNS + 分流)
 ```
 
-- **sing-box**:`singbox.nix` + `singbox-update.sh`(systemd timer 每 12h 拉订阅)+ `singbox-templates/` 模板
-- **dae**(流量分流器):监听 12345/tcp,`configFile = ./config.dae` 走全局 DNS + 节点池。**dae 自己负责 DNS 解析和流量分流,singbox/netflow 只作为节点池**
+- **订阅**:URL 存在 agenix(`subscriptions_main`/`subscriptions_backup`),由 `dae-sub-update.service` 写到 `/etc/dae/{main,backup}.sub`;`dae` 用原生 `subscription{}` 读取,并在 group 里用 `subtag()+name(regex:)+add_latency` 分层选节点(主订阅 > 副订阅、1x > 高倍率、新加坡 > 港澳台 > 日韩 > 欧美;AI 出口排除港澳台)。分层可用 `modules/nixos/base/dae/verify-filters.py` 校验
+- **dae**(唯一的代理出口):监听 12345/tcp,`configFile = ./config.dae`,自己吃订阅、选节点、做 DNS 解析与流量分流。原先的 sing-box 节点池 + subpipe 订阅转换已移除
 - **netflow**(青云梯客户端,`pkgs/netflow/`):自行打包,带 `module.nix`(服务) + `ui-module.nix`(Web UI) + `default.nix`(包) + `restore/v2board/`(订阅恢复脚本) + `ui/app.py`(Flask UI)
-- 三个上游**互斥**,dae 同时 wants 三个,daemon 化后 `dae` 接管所有流量分流
+- netflow 为可选上游;`dae` 是实际出口,dae 未启动时系统直连
 
 ---
 
@@ -143,7 +141,6 @@ scanPaths = path:
 
 | 包        | 用途       |
 | --------- | ---------- |
-| `subpipe` | 订阅转换器 |
 
 扫描机制 `lib/scanPkgs.nix` 同时支持:
 
@@ -176,7 +173,7 @@ overlays/overlay/all-packages.nix (再扫一遍 pkgs/ 走 callPackage)
   - `wujie_private` → `/etc/ssh/ssh_host_ed25519_key`
   - `shey_private` → `/home/shey/.ssh/id_rsa`
   - `shey_rclone` → `~/.config/rclone/rclone.conf`
-  - `subscriptions_main` / `subscriptions_backup` → sing-box 订阅
+  - `subscriptions_main` / `subscriptions_backup` → dae 订阅(文件名仍在 mysecrets 的 `singbox/` 目录下,内容由 dae 消费)
 - `environment.etc."ssh/ssh_host_ed25519_key".source` 把解密结果再放到 `/etc/`
 
 ---
@@ -207,7 +204,6 @@ overlays/overlay/all-packages.nix (再扫一遍 pkgs/ 走 callPackage)
 | `agenix` 锁 commit           | 不被上游 breaking 变化影响                                    |
 | `pkgs-stable` 在 specialArgs | 留作模块内 `pkgs-stable.<pkg>` 拿稳定版兜底                   |
 | `dae` 硬依赖代理服务         | 想关闭所有代理得手动 `disable` dae 引用                       |
-| `singbox` wantedBy 硬编码    | 与 `dae` 解耦困难,改用建议在 `singbox.nix` 里加 `enable` 选项 |
 | 镜像走 USTC + 清华           | `modules/nixos/base/nix.nix` 里 `substituters` 配置           |
 | `mysecrets` 走 SSH+codeberg  | 网络受限环境会卡 `nix flake update`                           |
 
@@ -224,7 +220,7 @@ overlays/overlay/all-packages.nix (再扫一遍 pkgs/ 走 callPackage)
 | KDE Plasma                   | `modules/nixos/desktop/kde/` + `home/linux/gui/base/plasma6/`                   |
 | KDE 桌面主题 / Win11 外观     | `home/linux/gui/base/plasma6/themes/`(数据主题)+ `dotfiles_writable/`(~/.config 快照)+ `default.nix` 的 `ensure*` rsync 段 |
 | KVM 虚拟机(win10)            | `modules/nixos/base/virtualisation.nix`(固件自动修复 + vm-backup + vm-restore) |
-| sing-box 订阅/模板           | `modules/nixos/base/singbox/singbox.nix` + `singbox-templates/`                 |
+| 代理订阅 / 节点优先级        | `modules/nixos/base/dae/dae.nix` + `config.dae` + `verify-filters.py`            |
 | dae 流量规则                 | `modules/nixos/base/dae/dae.nix` + `config.dae`                                 |
 | netflow 客户端               | `modules/nixos/base/netflow/default.nix` → `pkgs/netflow/`                      |
 | 新主机                       | `outputs/x86_64-linux/src/<name>.nix` + `hosts/<name>/` + `vars/networking.nix` |

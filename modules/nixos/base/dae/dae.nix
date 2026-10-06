@@ -158,8 +158,8 @@ in {
     };
   };
 
-  # dae 作为主要流量控制器，依赖任一代理服务(singbox、singbox-backup 互斥)
-  # 注意：dae负责所有DNS解析和流量分流,singbox 目前只作为节点池里的兜底节点
+  # dae 是唯一的代理出口:自己吃订阅、选节点、做 DNS 与流量分流。
+  # (原先的 sing-box 节点池 + subpipe 订阅转换已在迁移完成后移除)
   systemd.services.dae = {
     # 服务保留但默认不自动启动;需要时手动 `sudo systemctl start dae`。
     # 覆盖 nixpkgs 的 wantedBy=[ "multi-user.target" ],必须用 mkForce。
@@ -167,8 +167,8 @@ in {
     unitConfig = {
       Description = "dae Service";
     };
-    after = [ "singbox.service" "singbox-backup.service" "dae-sub-update.service" ];
-    wants = [ "singbox.service" "singbox-backup.service" "dae-sub-update.service" ];
+    after = [ "dae-sub-update.service" ];
+    wants = [ "dae-sub-update.service" ];
     serviceConfig = {
       # 不用 LoadCredential,直接用 /etc/dae/config.dae —— 这样 configDir 就是
       # /etc/dae,file:// 订阅(须与配置同目录)才能解析

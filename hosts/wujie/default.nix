@@ -90,14 +90,14 @@ in {
     networkmanager.enable = true;
   };
 
-  # 代理服务存在但默认不自动启动(dae / singbox / singbox-backup / 订阅更新 timer)
+  # 代理服务(dae)存在但默认不自动启动
   # 需要时手动启动:
-  #   sudo systemctl start singbox-sub-update.service   # 先拉取订阅
-  #   sudo systemctl start singbox                      # 主订阅
-  #   sudo systemctl start dae                           # dae 流量控制(依赖 singbox)
+  #   sudo systemctl start dae-sub-update.service   # 先拉取订阅(daemon 未跑也能拉)
+  #   sudo systemctl start dae                      # dae:节点选择 + DNS + 流量分流
   # 若要开机自启:
   #   modules/nixos/base/dae/dae.nix:把 systemd.services.dae.wantedBy 改回 [ "multi-user.target" ]
-  #   modules/nixos/base/singbox/singbox.nix:恢复 singbox/singbox-backup 的 wantedBy
+  # 订阅定时刷新(默认关):
+  #   sudo systemctl enable --now dae-sub-update.timer
 
   # kmscon 字体大小按本机分辨率调(wujie:2K / 2560×1440)。
   # 改这个值不需要动 modules/nixos/desktop/fonts.nix。

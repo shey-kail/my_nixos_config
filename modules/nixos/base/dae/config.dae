@@ -1,7 +1,7 @@
-# dae 配置 —— 从 sing-box 逐步移植而来
+# dae 配置 —— 唯一的代理出口(节点选择已从 sing-box 完全迁移过来)
 #
-# 节点来源：dae 原生订阅（主/副订阅的 URL 仍在 agenix 里，由
-# dae-sub-update.service 拉取后落盘到 /var/lib/dae/*.sub）
+# 节点来源：dae 原生订阅（主/副订阅的 URL 在 agenix 里，由
+# dae-sub-update.service 拉取后写到 /etc/dae/{main,backup}.sub）
 #
 # 【优先级方案】按字典序，用「同组内叠加 add_latency 偏置」实现：
 #
@@ -32,11 +32,7 @@ subscription {
     backup_sub: 'file://./backup.sub'
 }
 
-node {
-    # 过渡期兜底：sing-box 仍作为节点池里的一员（优先级最低）
-    singbox: 'socks5://127.0.0.1:9050'
-}
-
+# 节点全部来自上面的订阅(sing-box 节点池已移除)
 group {
     # ========================================================
     # 通用出口：主订阅 > 1x > 新加坡 > 港澳台 > 日韩 > 欧美
@@ -62,8 +58,6 @@ group {
         filter: subtag(backup_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') [add_latency: 71s]
         filter: subtag(backup_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && !name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') && name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') [add_latency: 72s]
         filter: subtag(backup_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && !name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') && !name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') && !name(regex: '(禁止|非法|下方|扣费|扣費|更新订阅|更新訂閱|ExpireAt|剩余|剩餘|到期|官网|官網|通知)') [add_latency: 73s]
-        # ---- 最后兜底：sing-box ----
-        filter: name(singbox) [add_latency: 120s]
 
         policy: min_moving_avg
     }
@@ -88,8 +82,6 @@ group {
         filter: subtag(backup_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && name(regex: '(新加坡|狮城|獅城|Singapore)') [add_latency: 70s]
         filter: subtag(backup_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') [add_latency: 71s]
         filter: subtag(backup_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && !name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') && !name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') && !name(regex: '(禁止|非法|下方|扣费|扣費|更新订阅|更新訂閱|ExpireAt|剩余|剩餘|到期|官网|官網|通知)') [add_latency: 72s]
-        # ---- 最后兜底：sing-box ----
-        filter: name(singbox) [add_latency: 120s]
 
         policy: min_moving_avg
     }
@@ -100,9 +92,6 @@ routing {
     # --- 直连规则 ---
     # DNS/SSH 等相关进程强制直连
     pname(ssh, dnsmasq, dropbear) -> must_direct
-
-    # 增加将sing-box流量直连不通过dae的路由配置
-    pname(sing-box) -> must_direct
 
     # DNS 地址或域名，强制直连
     dip(8.8.8.8) -> must_direct

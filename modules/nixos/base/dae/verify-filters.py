@@ -10,11 +10,10 @@ dae 的优先级是用「同一 group 内叠加 add_latency 偏置」实现的:�
   * 被排除的节点(假节点/不该用的区域)
 
 用法:
-    # 1) 从 sing-box 的 Clash API 导出节点名(任选其一,只要一行一个名字)
-    curl -s http://127.0.0.1:9090/proxies | \\
-      python3 -c 'import json,sys; d=json.load(sys.stdin)["proxies"]; \\
-        print("\\n".join(k for k,v in d.items() if v.get("type") not in
-        ("Selector","URLTest","Direct","Reject","Compatible","Pass")))' > /tmp/nodes.txt
+    # 1) 准备节点名清单(一行一个)。来源任意,例如:
+    #    - 从订阅内容里提取节点名(订阅已落在 /etc/dae/*.sub,root 可读)
+    #    - 或从机场面板/客户端复制
+    sudo grep -oE '^[^#].*' /etc/dae/main.sub > /dev/null  # 仅示意;按需自行提取
 
     # 2) 校验
     python3 modules/nixos/base/dae/verify-filters.py /tmp/nodes.txt

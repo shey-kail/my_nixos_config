@@ -57,15 +57,14 @@ modules/
   nixos/
     base.nix             # NixOS 公用:导入 base/ 与 desktop/
     base/                # nix、networking、ssh、core、packages、user-group、i18n、zram、fcitx5、virtualisation
-    base/singbox/        # sing-box 代理服务(含订阅更新 systemd timer)
-    base/dae/            # dae 流量控制器(依赖 singbox)
+    base/dae/            # dae 流量控制器(唯一的代理出口:原生订阅 + 节点选择 + DNS + 分流)
     base/netflow/        # netflow 代理客户端(含 web UI 子模块)
     desktop/             # KDE / Flatpak / 外设 / 安全
 home/
   base/                  # 跨平台(core、tui、gui、shells、editors)
   linux/                 # Linux 专用
 lib/                     # 工具函数:nixosSystem、scanPaths(自动扫描目录下的 .nix 与子目录)、attrs
-pkgs/                    # 自定义包:subpipe(订阅转换器)
+pkgs/                    # 自定义包(atrust/gstar-cad/sdmeeting/shandongtong 等 UOS deb 重打包)
 overlays/                # nixpkgs 覆盖:自动扫描 ./overlay 下所有 .nix
 vars/default.nix         # username、userfullname、useremail、initialHashedPassword
 secrets/nixos.nix        # agenix secret 定义(指向 mysecrets 输入中的 .age 文件)
@@ -76,8 +75,8 @@ secrets/nixos.nix        # agenix secret 定义(指向 mysecrets 输入中的 .a
 - **haumea + scanPaths**:`outputs/<arch>/src/<host>.nix` 用 `mylib.nixosSystem` 组装;`modules/nixos/<dir>/default.nix` 通过 `mylib.scanPaths ./.` 自动 import 同级所有 `.nix` 与子目录(忽略 `default.nix`)。新增模块文件无须修改 `default.nix`。
 - **specialArgs 注入**:`outputs/default.nix` 的 `genSpecialArgs` 把 `mylib`、`myvars`、`pkgs-unstable`、`pkgs-stable`、`overlays` 注入所有模块,模块参数中可直接使用。
 - **overlays**:`overlays/default.nix` 扫描 `overlays/overlay/*.nix`,与 NUR overlay 合并;`overlays/overlay/all-packages.nix` 进一步扫描 `pkgs/` 下的自定义包并 `callPackage`。
-- **代理服务依赖链**:`dae` 监听 `singbox.service` / `singbox-backup.service` 之后启动;`singbox` 通过 systemd timer 每 12 小时从订阅 URL 拉取配置(订阅密钥在 `secrets/nixos.nix` 中由 agenix 管理)。
-- **节点选择已迁移到 dae**:`dae` 用原生 `subscription{}` 同时吃主/副订阅(`dae-sub-update.service` 从 agenix 密钥拉取后写入 `/etc/dae/{main,backup}.sub`,因为 dae 要求 `file://` 订阅必须与配置同目录),在 group 里用 `subtag()` + `name(regex:)` + `add_latency` 分层实现优先级(主订阅 > 副订阅、1x > 高倍率、新加坡 > 港澳台 > 日韩 > 欧美;AI 出口排除港澳台)。sing-box 退化为节点池里的兜底节点。
+- **代理服务**:`dae` 是唯一的代理出口(`dae` 依赖 `dae-sub-update.service` 拉取订阅);默认不自动启动,需要时 `sudo systemctl start dae`。
+- **节点选择在 dae 里**:订阅 URL 存 agenix,`dae-sub-update.service` 拉到 `/etc/dae/{main,backup}.sub`(dae 要求 `file://` 订阅与配置同目录,配置以 0600 落在 `/etc/dae/config.dae`),group 用 `subtag()+name(regex:)+add_latency` 分层:主订阅 > 副订阅、1x > 高倍率、新加坡 > 港澳台 > 日韩 > 欧美,AI 出口排除港澳台。原 sing-box 节点池与 subpipe 已移除。
 - **预提交钩子**:`outputs/default.nix` 的 `checks.pre-commit-check` 启用 alejandra(Nix 格式化)、typos(拼写)、prettier。其他 deadnix/statix 已注释但工具已在 devShell 中。
 
 ### 重要约定
@@ -100,7 +99,7 @@ secrets/nixos.nix        # agenix secret 定义(指向 mysecrets 输入中的 .a
 | 用户 / shell / 终端                    | `home/linux/`、`home/base/core/`、`home/base/tui/`                                                                     |
 | KDE Plasma 6(默认桌面)                 | `modules/nixos/desktop/kde/` + `home/linux/gui/base/plasma6/`(Win11 主题:`themes/` 数据 + `dotfiles_writable/` 快照 + `ensure*` rsync 段 + Kvantum) |
 | Hyprland + DMS(备选会话)               | `modules/nixos/desktop/hyprland/`、`modules/nixos/desktop/dms/`(用 nixpkgs `programs.hyprland` / `programs.dms-shell`) |
-| 代理订阅 / sing-box                    | `modules/nixos/base/singbox/singbox.nix` + `singbox-templates/`                                                        |
+| 代理订阅 / 节点优先级                  | `modules/nixos/base/dae/`(`dae.nix` + `config.dae` + `verify-filters.py`)                                        |
 | dae 流量规则                           | `modules/nixos/base/dae/dae.nix` + `dae/config.dae`                                                                    |
 | netflow 客户端                         | `modules/nixos/base/netflow/default.nix` + `pkgs/netflow.nix`                                                          |
 | 自定义包                               | `pkgs/*.nix`(由 `overlays/overlay/all-packages.nix` 自动 callPackage)                                                  |
