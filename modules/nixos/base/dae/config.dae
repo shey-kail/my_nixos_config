@@ -1,3 +1,19 @@
+# dae 配置 —— 从 sing-box 逐步移植而来
+#
+# 节点来源：dae 原生订阅（主/副订阅的 URL 仍在 agenix 里，由
+# dae-sub-update.service 拉取后落盘到 /var/lib/dae/*.sub）
+#
+# 【优先级方案】按字典序，用「同组内叠加 add_latency 偏置」实现：
+#
+#   1. 主订阅 优于 副订阅            (+0s   / +60s)
+#   2. 1x 节点 优于 高倍率节点        (+0s   / +10s)
+#   3. 区域：新加坡 > 港澳台 > 日韩 > 欧美及其他  (+0 / +1s / +2s / +3s)
+#
+# 同一层内部仍然按实时延迟优选(policy: min_moving_avg)，只有在更高优先级的
+# 节点全都不可用(健康检查失败被剔除)时，才会用到下一层。
+#
+# AI 出口 proxy_ai 的层级完全一样，但**整组排除港澳台节点**。
+
 global {
     log_level: info
     # lan_interface: wlp2s0 # 按需开启
@@ -5,33 +21,76 @@ global {
     wan_interface: auto
 }
 
-# 定义出站代理，即我们的 singbox
+# ============================================================
+# 订阅：由 dae-sub-update.service 从 agenix 密钥拉取后写入
+# ============================================================
+subscription {
+    main_sub: 'file:///var/lib/dae/main.sub'
+    backup_sub: 'file:///var/lib/dae/backup.sub'
+}
+
 node {
-  # 现在 singbox 只有一个全局选择器，用户可在自动选择、手动选择或直连间切换
-  singbox: 'socks5://127.0.0.1:9050'
+    # 过渡期兜底：sing-box 仍作为节点池里的一员（优先级最低）
+    singbox: 'socks5://127.0.0.1:9050'
 }
 
 group {
-    singbox {
-        filter: name(singbox)
-        policy: fixed(0)
+    # ========================================================
+    # 通用出口：主订阅 > 1x > 新加坡 > 港澳台 > 日韩 > 欧美
+    # ========================================================
+    proxy {
+        # ---- 主订阅 · 1x ----
+        filter: subtag(main_sub) && name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && name(regex: '(新加坡|狮城|獅城|Singapore)') [add_latency: 0s]
+        filter: subtag(main_sub) && name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') [add_latency: 1s]
+        filter: subtag(main_sub) && name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && !name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') && name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') [add_latency: 2s]
+        filter: subtag(main_sub) && name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && !name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') && !name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') && !name(regex: '(禁止|非法|下方|扣费|扣費|更新订阅|更新訂閱|ExpireAt|剩余|剩餘|到期|官网|官網|通知)') [add_latency: 3s]
+        # ---- 主订阅 · 高倍率 ----
+        filter: subtag(main_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && name(regex: '(新加坡|狮城|獅城|Singapore)') [add_latency: 10s]
+        filter: subtag(main_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') [add_latency: 11s]
+        filter: subtag(main_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && !name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') && name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') [add_latency: 12s]
+        filter: subtag(main_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && !name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') && !name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') && !name(regex: '(禁止|非法|下方|扣费|扣費|更新订阅|更新訂閱|ExpireAt|剩余|剩餘|到期|官网|官網|通知)') [add_latency: 13s]
+        # ---- 副订阅（兜底）· 1x ----
+        filter: subtag(backup_sub) && name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && name(regex: '(新加坡|狮城|獅城|Singapore)') [add_latency: 60s]
+        filter: subtag(backup_sub) && name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') [add_latency: 61s]
+        filter: subtag(backup_sub) && name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && !name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') && name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') [add_latency: 62s]
+        filter: subtag(backup_sub) && name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && !name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') && !name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') && !name(regex: '(禁止|非法|下方|扣费|扣費|更新订阅|更新訂閱|ExpireAt|剩余|剩餘|到期|官网|官網|通知)') [add_latency: 63s]
+        # ---- 副订阅（兜底）· 高倍率 ----
+        filter: subtag(backup_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && name(regex: '(新加坡|狮城|獅城|Singapore)') [add_latency: 70s]
+        filter: subtag(backup_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') [add_latency: 71s]
+        filter: subtag(backup_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && !name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') && name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') [add_latency: 72s]
+        filter: subtag(backup_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && !name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') && !name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') && !name(regex: '(禁止|非法|下方|扣费|扣費|更新订阅|更新訂閱|ExpireAt|剩余|剩餘|到期|官网|官網|通知)') [add_latency: 73s]
+        # ---- 最后兜底：sing-box ----
+        filter: name(singbox) [add_latency: 120s]
+
+        policy: min_moving_avg
+    }
+
+    # ========================================================
+    # AI 出口：层级同 proxy，但**排除港澳台**
+    # ========================================================
+    proxy_ai {
+        # ---- 主订阅 · 1x ----
+        filter: subtag(main_sub) && name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && name(regex: '(新加坡|狮城|獅城|Singapore)') [add_latency: 0s]
+        filter: subtag(main_sub) && name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') [add_latency: 1s]
+        filter: subtag(main_sub) && name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && !name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') && !name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') && !name(regex: '(禁止|非法|下方|扣费|扣費|更新订阅|更新訂閱|ExpireAt|剩余|剩餘|到期|官网|官網|通知)') [add_latency: 2s]
+        # ---- 主订阅 · 高倍率 ----
+        filter: subtag(main_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && name(regex: '(新加坡|狮城|獅城|Singapore)') [add_latency: 10s]
+        filter: subtag(main_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') [add_latency: 11s]
+        filter: subtag(main_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && !name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') && !name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') && !name(regex: '(禁止|非法|下方|扣费|扣費|更新订阅|更新訂閱|ExpireAt|剩余|剩餘|到期|官网|官網|通知)') [add_latency: 12s]
+        # ---- 副订阅（兜底）· 1x ----
+        filter: subtag(backup_sub) && name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && name(regex: '(新加坡|狮城|獅城|Singapore)') [add_latency: 60s]
+        filter: subtag(backup_sub) && name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') [add_latency: 61s]
+        filter: subtag(backup_sub) && name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && !name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') && !name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') && !name(regex: '(禁止|非法|下方|扣费|扣費|更新订阅|更新訂閱|ExpireAt|剩余|剩餘|到期|官网|官網|通知)') [add_latency: 62s]
+        # ---- 副订阅（兜底）· 高倍率 ----
+        filter: subtag(backup_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && name(regex: '(新加坡|狮城|獅城|Singapore)') [add_latency: 70s]
+        filter: subtag(backup_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') [add_latency: 71s]
+        filter: subtag(backup_sub) && !name(regex: '(1x|1X|x1|X1|×1|1倍|一倍)') && !name(regex: '(新加坡|狮城|獅城|Singapore)') && !name(regex: '(香港|澳门|澳門|台湾|台灣|Hong ?Kong|Macau|Taiwan)') && !name(regex: '(日本|东京|東京|大阪|韩国|韓國|首尔|首爾|Japan|Korea|Tokyo|Osaka|Seoul)') && !name(regex: '(禁止|非法|下方|扣费|扣費|更新订阅|更新訂閱|ExpireAt|剩余|剩餘|到期|官网|官網|通知)') [add_latency: 72s]
+        # ---- 最后兜底：sing-box ----
+        filter: name(singbox) [add_latency: 120s]
+
+        policy: min_moving_avg
     }
 }
-
-## DNS 配置保持不变
-#dns {
-#  ipversion_prefer: 4
-#  upstream {
-#    alidns: 'udp://223.5.5.5:53'
-#    cfdns: 'tcp+udp://1.1.1.1:53'
-#  }
-#  routing {
-#    request {
-#      qname(geosite:cn) -> alidns
-#      fallback: cfdns
-#    }
-#  }
-#}
 
 # 分流规则
 routing {
@@ -61,6 +120,9 @@ routing {
     # 中国域名，直连
     domain(geosite:cn) -> direct
 
+    # --- AI 服务：走专用出口（排除港澳台节点）---
+    domain(geosite:category-ai-!cn) -> proxy_ai
+
     # 浏览器的进程直连 (浏览器使用proxy switchyomega)
     pname(msedge, firefox) -> direct
 
@@ -75,10 +137,7 @@ routing {
     domain(geosite:category-ads) -> block
     l4proto(udp) && dport(443) -> block # 拦截 QUIC
 
-    # --- 代理规则 (全部指向 singbox) ---
-    # 未命中直连规则的流量，全部走 singbox 代理
-
     # --- 兜底规则 ---
-    # 未命中上面规则的，全部走 singbox 代理
-    fallback: singbox
+    # 未命中上面规则的，全部走通用出口
+    fallback: proxy
 }
