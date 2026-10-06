@@ -84,6 +84,22 @@ let
       systemctl start --wait dae-sub-update.service || true
     fi
   '';
+
+  # 把配置以 0600 落到 /etc/dae/config.dae。
+  #
+  # 不能直接用 environment.etc:它生成的是指向 nix store 的软链,而 store 里的
+  # 文件是 0444(dae 会拒绝:"permissions 0644 are too open; requires the file
+  # is NOT writable by the same group and NOT accessible by others")。
+  # 配置文件本身不含密钥(订阅 URL 在 /etc/dae/*.sub,已是 0600),但仍按 dae
+  # 的要求收紧权限。
+  installConfigScript = pkgs.writeShellScript "dae-install-config" ''
+    set -e
+    mkdir -p ${cfgDir}
+    # 先 unlink:旧版本用 environment.etc 生成的是指向 store 的软链,
+    # 而 install 默认会跟随目标软链写入(会去写只读的 store 文件)
+    rm -f ${cfgDir}/config.dae
+    ${pkgs.coreutils}/bin/install -m 0600 ${daeConfig} ${cfgDir}/config.dae
+  '';
 in {
   services.dae = {
     # enable 必须为 true,让 nixpkgs 生成完整的 dae.service(含 ExecStart/配置校验)。
@@ -97,8 +113,14 @@ in {
     configFile = daeConfig;
   };
 
-  # 配置落到真实路径 /etc/dae/config.dae(内容不含密钥,可安全放 store)
-  environment.etc."dae/config.dae".source = daeConfig;
+  # 配置以 0600 复制到 /etc/dae/config.dae(见 installConfigScript 注释:
+  # environment.etc 的 0444 软链会被 dae 以 "permissions are too open" 拒绝)。
+  # 这里在 activation 阶段先放一份,dae 启动时(ExecStartPre)还会再刷一次。
+  system.activationScripts.dae-config = ''
+    mkdir -p ${cfgDir}
+    rm -f ${cfgDir}/config.dae
+    ${pkgs.coreutils}/bin/install -m 0600 ${daeConfig} ${cfgDir}/config.dae
+  '';
 
   # 配置目录 + 订阅文件占位
   systemd.tmpfiles.rules = [
@@ -146,8 +168,11 @@ in {
       # 不用 LoadCredential,直接用 /etc/dae/config.dae —— 这样 configDir 就是
       # /etc/dae,file:// 订阅(须与配置同目录)才能解析
       LoadCredential = lib.mkForce [ ];
+      # 顺序:先按 0600 落配置(否则 dae 报 permissions too open),
+      # 再校验配置,最后确保订阅文件存在
       ExecStartPre = lib.mkForce [
         ""
+        "${installConfigScript}"
         "${daeBin} validate -c ${cfgDir}/config.dae"
         "${ensureSubsScript}"
       ];
