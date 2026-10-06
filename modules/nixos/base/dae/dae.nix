@@ -29,28 +29,52 @@ let
     set -uo pipefail
     mkdir -p ${cfgDir}
 
+    # 拉取订阅。要点:
+    #   - 记录 HTTP 状态码与字节数,失败原因一目了然
+    #   - 空内容(0 字节)绝不覆盖已有文件 —— 订阅过期/被拦截时常见的表现,
+    #     否则会把好配置清掉
     fetch() {
-      local secret="$1" out="$2" name="$3" url
+      local secret="$1" out="$2" name="$3" url code size
       if [ ! -s "$secret" ]; then
         echo "[dae-sub-update] $name: secret missing ($secret)" >&2
         return 1
       fi
       url="$(cat "$secret")"
-      if curl -fsSL --retry 3 --retry-delay 2 --connect-timeout 15 -o "$out.tmp" "$url"; then
-        mv "$out.tmp" "$out"
-        chmod 600 "$out"
-        echo "[dae-sub-update] $name: updated ($(wc -c < "$out") bytes)"
-      else
-        rm -f "$out.tmp"
-        echo "[dae-sub-update] $name: fetch failed, keeping existing file" >&2
-        return 1
-      fi
+      code="$(curl -sSL --retry 3 --retry-delay 2 --connect-timeout 20 \
+                -o "$out.tmp" -w '%{http_code}' "$url" 2>/dev/null)" || code="curl-error"
+      size=0
+      [ -f "$out.tmp" ] && size="$(wc -c < "$out.tmp")"
+
+      case "$code" in
+        2??)
+          if [ "$size" -gt 0 ]; then
+            mv "$out.tmp" "$out"
+            chmod 600 "$out"
+            echo "[dae-sub-update] $name: updated (http $code, $size bytes)"
+            return 0
+          fi
+          echo "[dae-sub-update] $name: EMPTY body (http $code, 0 bytes) — 订阅可能已过期或被拦截,保留旧文件" >&2
+          ;;
+        *)
+          echo "[dae-sub-update] $name: HTTP/网络失败 (code=$code) — 保留旧文件" >&2
+          ;;
+      esac
+      rm -f "$out.tmp"
+      return 1
     }
 
     rc=0
     fetch ${mainSecret} ${mainSubFile} main || rc=1
     fetch ${backupSecret} ${backupSubFile} backup || rc=1
     exit $rc
+  '';
+
+  # 拉完订阅后让 dae 重新加载。
+  # 注意:ExecStart* 不经过 shell,写成 "... 2>/dev/null || true" 会被当成
+  # 参数传给 systemctl(之前就是这样报 Invalid unit name 的),所以必须包成脚本。
+  reloadScript = pkgs.writeShellScript "dae-reload-after-subs" ''
+    ${pkgs.systemd}/bin/systemctl is-active --quiet dae.service || exit 0
+    ${pkgs.systemd}/bin/systemctl reload dae.service || true
   '';
 
   # dae 启动前确保订阅文件存在(拉取失败也不阻塞启动:dae 可先用本地节点)
@@ -91,8 +115,8 @@ in {
       Type = "oneshot";
       User = "root";
       ExecStart = fetchScript;
-      # 拉完让 dae 重新读取订阅(daemon 未运行时 reload 会失败,忽略即可)
-      ExecStartPost = [ "${pkgs.systemd}/bin/systemctl reload dae.service 2>/dev/null || true" ];
+      # 拉完让 dae 重新读取订阅(daemon 未运行时脚本自己退出 0)
+      ExecStartPost = [ reloadScript ];
     };
   };
 
