@@ -95,10 +95,13 @@ let
   installConfigScript = pkgs.writeShellScript "dae-install-config" ''
     set -e
     mkdir -p ${cfgDir}
+    chmod 0700 ${cfgDir}
     # 先 unlink:旧版本用 environment.etc 生成的是指向 store 的软链,
     # 而 install 默认会跟随目标软链写入(会去写只读的 store 文件)
     rm -f ${cfgDir}/config.dae
     ${pkgs.coreutils}/bin/install -m 0600 ${daeConfig} ${cfgDir}/config.dae
+    # 显式再 chmod 一次,确保不受任何 umask/实现差异影响
+    chmod 0600 ${cfgDir}/config.dae
   '';
 in {
   services.dae = {
@@ -118,8 +121,10 @@ in {
   # 这里在 activation 阶段先放一份,dae 启动时(ExecStartPre)还会再刷一次。
   system.activationScripts.dae-config = ''
     mkdir -p ${cfgDir}
+    chmod 0700 ${cfgDir}
     rm -f ${cfgDir}/config.dae
     ${pkgs.coreutils}/bin/install -m 0600 ${daeConfig} ${cfgDir}/config.dae
+    chmod 0600 ${cfgDir}/config.dae
   '';
 
   # 配置目录 + 订阅文件占位
