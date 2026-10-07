@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, myvars, ... }:
 let
   daeConfig = ./config.dae;
   daeBin = lib.getExe pkgs.dae;
@@ -103,6 +103,43 @@ let
     # 显式再 chmod 一次,确保不受任何 umask/实现差异影响
     chmod 0600 ${cfgDir}/config.dae
   '';
+
+  # dae 启停时给桌面发通知(托盘气泡)。
+  #
+  # dae 是系统服务(root),而通知要投递到用户会话的 D-Bus,所以要:
+  #   1. 找到该用户的活跃图形会话对应的 session bus(/run/user/<uid>/bus)
+  #   2. 用 runuser 切到该用户身份再 notify-send(通知守护进程只接受同 uid 的消息)
+  # 没有图形会话(例如从 SSH 启动、或开机阶段)时静默跳过。
+  notifyScript = pkgs.writeShellScript "dae-notify" ''
+    mode="''${1:-}"
+    case "$mode" in
+      start) title="dae 已启动"; body="代理已接管流量(按优先级选节点)"; icon="network-vpn" ;;
+      stop)  title="dae 已停止"; body="流量已恢复直连";                  icon="network-offline" ;;
+      *) exit 0 ;;
+    esac
+
+    user="${myvars.username}"
+    uid="$(${pkgs.coreutils}/bin/id -u "$user" 2>/dev/null)" || exit 0
+    runtime="/run/user/$uid"
+    bus="$runtime/bus"
+    [ -S "$bus" ] || exit 0
+
+    # 只有存在活跃图形会话时才提示(避免 SSH/开机阶段刷错误)
+    ${pkgs.systemd}/bin/loginctl list-sessions --no-legend 2>/dev/null \
+      | while read -r sid s_uid s_user _rest; do
+          [ "$s_user" = "$user" ] || continue
+          state="$(${pkgs.systemd}/bin/loginctl show-session "$sid" -p State --value 2>/dev/null)"
+          [ "$state" = "active" ] || continue
+          echo found
+        done | grep -q found || exit 0
+
+    ${pkgs.util-linux}/bin/runuser -u "$user" -- \
+      ${pkgs.coreutils}/bin/env \
+        DBUS_SESSION_BUS_ADDRESS="unix:path=$bus" \
+        XDG_RUNTIME_DIR="$runtime" \
+        ${pkgs.libnotify}/bin/notify-send -a dae -i "$icon" -u normal -t 8000 "$title" "$body" \
+      2>/dev/null || true
+  '';
 in {
   services.dae = {
     # enable 必须为 true,让 nixpkgs 生成完整的 dae.service(含 ExecStart/配置校验)。
@@ -185,6 +222,9 @@ in {
         ""
         "${daeBin} run --disable-timestamp -c ${cfgDir}/config.dae"
       ];
+      # 启停时在桌面(托盘)弹通知
+      ExecStartPost = [ "${notifyScript} start" ];
+      ExecStopPost = [ "${notifyScript} stop" ];
     };
   };
 }
