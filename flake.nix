@@ -119,5 +119,14 @@
       url = "github:Daaboulex/openviking-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # ArtCraft 创意套件(PhotoCraft / VectorCraft / FilmCraft / SoundCraft 等)的
+    # 非官方 NixOS 打包:提供 homeManagerModules / nixosModules / overlays,
+    # 以及 pkgs.artcraft.<app>。同样走 codeload 直链,避开 github: API 的 302 超时。
+    # 更新应用版本:`nix flake update artcraft`(上游每小时自动跟版)
+    artcraft = {
+      url = "tarball+https://codeload.github.com/Devitek/artcraft-nixos/tar.gz/main";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 }
