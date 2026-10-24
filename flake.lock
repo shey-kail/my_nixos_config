@@ -31,14 +31,14 @@
         ]
       },
       "locked": {
-        "lastModified": 1791846403,
-        "narHash": "sha256-pB4WHpqvWAW+PlWfjFSYjVPe9wiOXvVXiseMLSTpysM=",
+        "lastModified": 1792796636,
+        "narHash": "sha256-qBj3CBlhyG58gh8FOgs5ZnmaIS4ohtk8p0LHWKICtoc=",
         "type": "tarball",
-        "url": "https://codeload.github.com/Devitek/artcraft-nixos/tar.gz/main"
+        "url": "https://codeload.github.com/Devitek/artcraft-nixos/tar.gz/3e631a12d2426a629f61e0fc83ba5325ee1a2143"
       },
       "original": {
         "type": "tarball",
-        "url": "https://codeload.github.com/Devitek/artcraft-nixos/tar.gz/main"
+        "url": "https://codeload.github.com/Devitek/artcraft-nixos/tar.gz/3e631a12d2426a629f61e0fc83ba5325ee1a2143"
       }
     },
     "bun2nix": {

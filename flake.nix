@@ -125,7 +125,7 @@
     # 以及 pkgs.artcraft.<app>。同样走 codeload 直链,避开 github: API 的 302 超时。
     # 更新应用版本:`nix flake update artcraft`(上游每小时自动跟版)
     artcraft = {
-      url = "tarball+https://codeload.github.com/Devitek/artcraft-nixos/tar.gz/main";
+      url = "tarball+https://codeload.github.com/Devitek/artcraft-nixos/tar.gz/3e631a12d2426a629f61e0fc83ba5325ee1a2143";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
