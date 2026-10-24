@@ -1,7 +1,4 @@
-{
-  pkgs,
-  ...
-}: {
+{pkgs, ...}: {
   #############################################################
   #
   #  Basic settings for development environment
@@ -16,6 +13,8 @@
   home.packages = with pkgs; [
     sqlite
     pixi
+    # Rust 测试运行器(比 `cargo test` 快很多,支持 per-test 超时/重试/分区)
+    cargo-nextest
   ];
 
   programs = {
