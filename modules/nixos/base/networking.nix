@@ -6,10 +6,16 @@
   services.avahi = {
     enable = true;
     nssmdns4 = true;
-    publish = {
-      enable = true;
-      domain = true;
-      userServices = true;
+    # 新 nixpkgs 把 avahi 的发布开关挪到了 settings.publish(原 publish.* 已废弃):
+    #   publish.enable       → disable-publishing = false
+    #   publish.userServices → disable-user-service-publishing = false + publish-addresses = true
+    #   publish.domain       → publish-domain = true
+    # 布尔值由模块自动渲染成 avahi 需要的 yes/no。
+    settings.publish = {
+      disable-publishing = false;
+      disable-user-service-publishing = false;
+      publish-addresses = true;
+      publish-domain = true;
     };
   };
 
